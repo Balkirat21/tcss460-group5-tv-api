@@ -29,7 +29,8 @@ Render is a modern cloud platform that provides free hosting for web services, s
 
 ### Demo Test
 - Below are the logs from a successful deployment test of a sample web-api we created for Render.
+![Render Logs](images/RenderTestDeploymentLogs.png)
 
 - Upon visiting the root endpoint, the API returns the expected JSON response: {"message":"Welcome to Group 5 TV API!"}
-
+![Endpoint Test](images/RenderRootEndpointTest.png)
 ## Option 2:
