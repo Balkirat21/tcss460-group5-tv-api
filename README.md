@@ -11,7 +11,7 @@ The Web API is built using **Node.js** and **Express**, and provides secure, API
 **Group Members**
 
 - **Balkirat Singh** – I tested the /api/v1/shows endpoint in Postman to confirm that our API successfully loads the TV dataset and supports pagination with different page and pageSize values. Right now, the API can read data from the CSV file, return paginated results, and fetch individual show details. I also wrote the Web API Functionality Plan, explaining how each route is intended to work. Next, we’ll be integrating the remaining features like adding, updating, and deleting records, as well as connecting the API to a PostgreSQL database for permanent data storage. 
--
+- **Kobe Benavente** – Researched and identified a potential cloud hosting option for our project, evaluating its pros and cons. Tested deployment using a similar Web API to confirm compatibility. Also helped the team stay organized by clarifying what tasks were still pending and ensuring everyone understood our next steps.
 -
 
 Each team member collaborated during the Alpha Sprint to ensure the Web API could successfully load and serve the dataset from the CSV file and prepare for future PostgreSQL migration.
