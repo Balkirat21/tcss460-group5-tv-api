@@ -1,0 +1,4 @@
+node_modules/cle
+.env
+.DS_Store
+.idea/
