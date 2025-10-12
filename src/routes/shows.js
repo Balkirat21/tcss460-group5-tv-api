@@ -13,7 +13,7 @@ const loadCSVData = () => {
     const results = [];
 
     fs.createReadStream(filePath)
-        .pipe(csv({ separator: '\t' })) // your data is tab-separated
+        .pipe(csv()) // it's comma-separated, not tab-separated
         .on('data', (data) => results.push(data))
         .on('end', () => {
             tvShows = results;
@@ -26,16 +26,34 @@ loadCSVData();
 // GET all shows (with optional pagination)
 router.get('/', (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 20;
+    const pageSize = parseInt(req.query.pageSize) || 25;
+    const nameFilter = req.query.name ? req.query.name.toLowerCase() : null;
+    const genreFilter = req.query.genre ? req.query.genre.toLowerCase() : null;
+
+    // Apply filters
+    let filtered = [...tvShows];
+    if (nameFilter) {
+        filtered = filtered.filter(show =>
+            show.Name && show.Name.toLowerCase().includes(nameFilter)
+        );
+    }
+    if (genreFilter) {
+        filtered = filtered.filter(show =>
+            show.Genres && show.Genres.toLowerCase().includes(genreFilter)
+        );
+    }
+
+    // Pagination logic
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
-    const paginated = tvShows.slice(start, end);
+    const paginated = filtered.slice(start, end);
 
     res.json({
-        page,
+        totalRecords: filtered.length,
+        currentPage: page,
+        totalPages: Math.ceil(filtered.length / pageSize),
         pageSize,
-        total: tvShows.length,
-        shows: paginated
+        results: paginated
     });
 });
 
