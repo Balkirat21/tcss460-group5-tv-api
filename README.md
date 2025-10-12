@@ -10,9 +10,9 @@ The Web API is built using **Node.js** and **Express**, and provides secure, API
 
 **Group Members**
 
-- **Balkirat Singh** – Project setup, Node.js/Express API initialization, API key configuration, and CSV data integration.  
-- **Jakita Kaur** – Planning API routes, reviewing dataset fields, assisting with data parsing and filtering design.  
-- **Abadat Sandhu** – Documentation planning, ER diagram design draft, and SQL schema structure planning.  
+- **Balkirat Singh** – I tested the /api/v1/shows endpoint in Postman to confirm that our API successfully loads the TV dataset and supports pagination with different page and pageSize values. Right now, the API can read data from the CSV file, return paginated results, and fetch individual show details. I also wrote the Web API Functionality Plan, explaining how each route is intended to work. Next, we’ll be integrating the remaining features like adding, updating, and deleting records, as well as connecting the API to a PostgreSQL database for permanent data storage. 
+-
+-
 
 Each team member collaborated during the Alpha Sprint to ensure the Web API could successfully load and serve the dataset from the CSV file and prepare for future PostgreSQL migration.
 
@@ -24,7 +24,6 @@ Each team member collaborated during the Alpha Sprint to ensure the Web API coul
 
 - **Discord:** Used for group coordination, messaging, and short check-ins.  
 - **GitHub:** Used for version control, code review, and tracking commits.  
-- **Zoom (as needed):** Used for walkthrough sessions when implementing new features or troubleshooting.  
 
 Meetings occurred weekly to align progress and discuss the next sprint goals.
 
@@ -32,27 +31,34 @@ Meetings occurred weekly to align progress and discuss the next sprint goals.
 
 ## 🧠 Alpha Sprint Comments
 
-- Successfully loaded and parsed the large dataset (7,382 TV shows) using Node.js and Express.  
+- Successfully integrated and tested the /api/v1/shows endpoint with pagination using Postman.  
 - Encountered path issues when loading the CSV due to macOS trailing space in folder names — resolved after debugging.  
-- API routes are functional and secured by an API key via environment variables.  
-- Next tasks include pagination, filtering (by genre, title, or network), and generating Swagger documentation for all routes.  
-- Group plans to add an `/api-docs` endpoint for live documentation in the next sprint.  
+- Implemented API key authentication through environment variables (.env) for secure route access. 
+- Completed the Web API Functionality Plan outlining all proposed routes and features for client documentation. 
+- Next steps include implementing POST, PUT, and DELETE routes to enable full CRUD operations and preparing Swagger-based live documentation under an /api-docs route.
 
 ---
 
-## 🗂️ Repository Structure
+## 🗂️ Current Repository Structure
 
+```
 tcss460-group5-tv-api/
-├── data/
-│ └── tv_last1years.csv
-├── src/
-│ ├── app.js
-│ └── routes/
-│ └── shows.js
-├── .env
-├── package.json
-├── project_files/ ← to contain ER diagram, SQL script, Swagger YAML, and docs
-└── README.md
+  .idea/                    (IDE configuration files)
+  data/
+    tv_last1years.csv
+  node_modules/
+  project_files/
+    WebAPI_Functionality_Plan.md
+  src/
+    middleware/
+    routes/
+    app.js
+  .env
+  .gitignore
+  package.json
+  package-lock.json
+  README.md
+```
 
 ## 🧩 Summary
 
