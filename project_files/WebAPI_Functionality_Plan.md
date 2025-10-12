@@ -32,7 +32,7 @@ Our Web API is designed to:
     "page": 1,
     "pageSize": 20,
     "total": 7382,
-    "shows": [...]
+    "shows": ["..."]
   }
   ```
 
