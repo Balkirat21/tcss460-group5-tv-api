@@ -64,12 +64,22 @@ tcss460-group5-tv-api/
   package-lock.json
   README.md
 ```
-
 ## 🧩 Summary
 
-This project represents the **Alpha Sprint milestone** for Group 5’s Dataset Web API.  
-It fulfills the initial implementation requirement by:
-- Setting up a working Express server  
-- Loading and serving the assigned dataset  
-- Implementing API key protection  
-- Preparing documentation and database schema for the next sprint
+This project represents the **Alpha Sprint milestone** for Group 5’s Dataset Web API in TCSS 460.  
+Throughout this sprint, the team collaborated to design, build, and document the foundation of a fully functional backend service focused on the TV dataset (`tv_last1years.csv`). Using **Node.js** and **Express**, the API securely loads, parses, and serves over 7,000 television show records while supporting paginated responses through query parameters.  
+
+The API was secured using an **API key authentication system**, ensuring that only authorized users can access endpoints. The functionality was thoroughly tested using **Postman**, verifying the performance of the `/api/v1/shows` route and confirming that pagination and response structures worked as intended.  
+
+In addition to the core implementation, the team produced extensive planning and documentation deliverables. Balkirat Singh created the **Web API Functionality Plan**, detailing all proposed routes, CRUD operations, and future enhancements for client-facing clarity. Pham Nguyen designed a comprehensive **Entity-Relationship (ER) Diagram** and authored the **SQL initialization script**, defining all tables, primary and foreign keys, and relationships necessary for future PostgreSQL integration. The script currently includes `VARCHAR` placeholders, which will be refined with accurate data types in the next sprint.  
+
+Meanwhile, MD Khan organized the **Git repository**, configured the Express server, and established the project’s base structure, ensuring consistency with Node.js best practices. He also helped set up the **Hello World API deployment** on Vercel to validate cloud compatibility. Kobe Benavente researched and compared **cloud hosting platforms** (Render and Vercel), testing deployment setups to identify the most reliable hosting solution for future use.  
+
+Overall, this sprint laid the groundwork for future development by combining API design, database modeling, and cloud exploration into a cohesive project.  
+The next sprint will focus on:
+- Implementing **full CRUD functionality** (POST, PUT, DELETE)  
+- Integrating a **PostgreSQL database** for persistent storage  
+- Adding **Swagger-based live documentation** for route visualization and testing  
+- Refining the **SQL schema** with proper data types and indexing for optimized performance  
+
+By completing these steps, Group 5 will transition from a CSV-driven prototype to a fully hosted and database-backed Web API capable of supporting real-world applications.
