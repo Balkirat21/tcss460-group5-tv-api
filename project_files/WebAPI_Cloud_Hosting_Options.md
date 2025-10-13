@@ -60,3 +60,8 @@ Vercel is a powerful cloud platform designed for deploying web applications with
 
 ### Demo Test
 We deployed our **Hello World API** using Vercel’s serverless function setup.
+- Below are the logs from a successful deployment test of a sample web-api we created for Vercel.
+![Vercel Logs](images/vercelscreenshot.png)
+
+- Upon visiting the root endpoint, the API returns the expected JSON response: {"message":"Welcome to Group 5 TV API!"}
+![Endpoint Test](images/welcomeMassage.png)
