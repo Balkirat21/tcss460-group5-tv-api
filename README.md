@@ -38,6 +38,7 @@ Meetings occurred weekly to align progress and discuss the next sprint goals.
 - Completed the Web API Functionality Plan outlining all proposed routes and features for client documentation. 
 - Next steps include implementing POST, PUT, and DELETE routes to enable full CRUD operations and preparing Swagger-based live documentation under an /api-docs route.
 - Tested various cloud hosting options for web APIs. Found success with Render and Vercel, however what we decide to go with in the future may be subject to change. 
+- Created an **SQL initialization script** defining all database tables and relationships. The current version includes **`VARCHAR` placeholders** for fields, which will be updated to accurate data types in the next sprint as part of database migration and refinement.  
 
 ---
 
