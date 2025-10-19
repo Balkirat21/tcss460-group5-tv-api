@@ -1,69 +1,111 @@
 import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import csv from 'csv-parser';
+import pool from '../config/db.js';
 
 const router = express.Router();
 
-let tvShows = [];
-
-// Load CSV file into memory when the server starts
-const loadCSVData = () => {
-    const filePath = path.join(process.cwd(), 'data', 'tv_last1years.csv');
-    const results = [];
-
-    fs.createReadStream(filePath)
-        .pipe(csv()) // it's comma-separated, not tab-separated
-        .on('data', (data) => results.push(data))
-        .on('end', () => {
-            tvShows = results;
-            console.log(`Loaded ${tvShows.length} TV shows from CSV.`);
-        });
-};
-
-loadCSVData();
-
 // GET all shows (with optional pagination)
-router.get('/', (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 25;
-    const nameFilter = req.query.name ? req.query.name.toLowerCase() : null;
-    const genreFilter = req.query.genre ? req.query.genre.toLowerCase() : null;
+router.get('/', async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 25;
+        const nameFilter = req.query.name || null;
+        const genreFilter = req.query.genre || null;
 
-    // Apply filters
-    let filtered = [...tvShows];
-    if (nameFilter) {
-        filtered = filtered.filter(show =>
-            show.Name && show.Name.toLowerCase().includes(nameFilter)
-        );
+        // Build the query dynamically based on filters
+        let query = 'SELECT * FROM tv_shows';
+        let countQuery = 'SELECT COUNT(*) FROM tv_shows';
+        const params = [];
+        const conditions = [];
+
+        if (nameFilter) {
+            conditions.push(`name ILIKE $${params.length + 1}`);
+            params.push(`%${nameFilter}%`);
+        }
+
+        if (genreFilter) {
+            // genres is stored as a semicolon-separated string
+            conditions.push(`genres ILIKE $${params.length + 1}`);
+            params.push(`%${genreFilter}%`);
+        }
+
+        if (conditions.length > 0) {
+            const whereClause = ' WHERE ' + conditions.join(' AND ');
+            query += whereClause;
+            countQuery += whereClause;
+        }
+
+        // Get total count
+        const countResult = await pool.query(countQuery, params);
+        const totalRecords = parseInt(countResult.rows[0].count);
+
+        // Add pagination
+        const offset = (page - 1) * pageSize;
+        query += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+        params.push(pageSize, offset);
+
+        const result = await pool.query(query, params);
+
+        res.json({
+            totalRecords,
+            currentPage: page,
+            totalPages: Math.ceil(totalRecords / pageSize),
+            pageSize,
+            results: result.rows
+        });
+    } catch (error) {
+        console.error('Error fetching shows:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
-    if (genreFilter) {
-        filtered = filtered.filter(show =>
-            show.Genres && show.Genres.toLowerCase().includes(genreFilter)
-        );
+});
+
+// GET shows by year
+router.get('/showbyyear/:year', async (req, res) => {
+    try {
+        const year = req.params.year;
+
+        // Query shows where first_air_date year matches
+        const query = `
+            SELECT * FROM tv_shows
+            WHERE EXTRACT(YEAR FROM first_air_date) = $1
+        `;
+
+        const result = await pool.query(query, [parseInt(year)]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: 'No shows found for this year',
+                year: year
+            });
+        }
+
+        res.json({
+            year: year,
+            count: result.rows.length,
+            shows: result.rows
+        });
+    } catch (error) {
+        console.error('Error fetching shows by year:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
-
-    // Pagination logic
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginated = filtered.slice(start, end);
-
-    res.json({
-        totalRecords: filtered.length,
-        currentPage: page,
-        totalPages: Math.ceil(filtered.length / pageSize),
-        pageSize,
-        results: paginated
-    });
 });
 
 // GET one show by ID
-router.get('/:id', (req, res) => {
-    const show = tvShows.find(s => s.ID === req.params.id);
-    if (!show) {
-        return res.status(404).json({ error: 'Show not found' });
+router.get('/:id', async (req, res) => {
+    try {
+        const showId = req.params.id;
+
+        const query = 'SELECT * FROM tv_shows WHERE id = $1';
+        const result = await pool.query(query, [parseInt(showId)]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Show not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error fetching show by ID:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
-    res.json(show);
 });
 
 export default router;
