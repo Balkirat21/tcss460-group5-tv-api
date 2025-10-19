@@ -1,5 +1,6 @@
 export function checkApiKey(req, res, next) {
-    const apiKey = req.header('x-api-key');
+    // Accept API key from either header OR query parameter
+    const apiKey = req.header('x-api-key') || req.query.apikey;
     const validKey = process.env.API_KEY;
 
     if (!apiKey || apiKey !== validKey) {
