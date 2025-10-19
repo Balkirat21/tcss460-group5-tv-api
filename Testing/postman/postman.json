@@ -1,0 +1,97 @@
+{
+    "info": {
+      "name": "Beta Sprint – TV API",
+      "_postman_id": "a1111111-b222-4c33-d444-eeeeeeeeeeee",
+      "description": "Tests for root and a variable /api/v1/{{resource}}/by-year route.",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+      { "key": "base_url", "value": "http://localhost:3000" },
+      { "key": "api_key", "value": "REPLACE_ME" },
+      { "key": "resource", "value": "shows" }
+    ],
+    "item": [
+      {
+        "name": "Root – health",
+        "request": {
+          "method": "GET",
+          "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
+          "url": { "raw": "{{base_url}}/", "host": ["{{base_url}}"] }
+        },
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('status 200', () => pm.response.code === 200);",
+                "const body = pm.response.json();",
+                "pm.test('has welcome message', () => typeof body.message === 'string' && body.message.length > 0);"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "{{resource}} by year – returns ≥ 1",
+        "request": {
+          "method": "GET",
+          "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
+          "url": {
+            "raw": "{{base_url}}/api/v1/{{resource}}/by-year?year=1999",
+            "host": ["{{base_url}}"],
+            "path": ["api", "v1", "{{resource}}", "by-year"],
+            "query": [{ "key": "year", "value": "1999" }]
+          }
+        },
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('status 200', () => pm.response.code === 200);",
+                "const data = pm.response.json();",
+                "pm.expect(Array.isArray(data)).to.be.true;",
+                "pm.test('at least one row', () => pm.expect(data.length).to.be.above(0));",
+                "if (data.length) {",
+                "  const row = data[0];",
+                "  pm.test('has id', () => pm.expect(row).to.have.property('id'));",
+                "  pm.test('has title', () => pm.expect(row).to.have.property('title'));",
+                "  pm.test('has release_year', () => pm.expect(row).to.have.property('release_year'));",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "{{resource}} by year – empty",
+        "request": {
+          "method": "GET",
+          "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
+          "url": {
+            "raw": "{{base_url}}/api/v1/{{resource}}/by-year?year=1800",
+            "host": ["{{base_url}}"],
+            "path": ["api", "v1", "{{resource}}", "by-year"],
+            "query": [{ "key": "year", "value": "1800" }]
+          }
+        },
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('status 200', () => pm.response.code === 200);",
+                "const data = pm.response.json();",
+                "pm.expect(Array.isArray(data)).to.be.true;",
+                "pm.test('empty array', () => pm.expect(data.length).to.equal(0));"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  

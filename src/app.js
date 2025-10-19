@@ -1,31 +1,20 @@
+// app.js
 import express from 'express';
 import dotenv from 'dotenv';
-import { checkApiKey } from './middleware/authMiddleware.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../openapi.json' with { type: 'json' };
 import showsRouter from './routes/shows.js';
+// import { checkApiKey } from './middleware/authMiddleware.js'; // ← comment out
 
-// Load environment variables from .env file
 dotenv.config();
-
-console.log('Loaded API key:', process.env.API_KEY);
-
-// Create the Express application
 const app = express();
-
-// Parse JSON bodies
 app.use(express.json());
 
-// Protect all routes with API key
-app.use(checkApiKey);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Root route
-app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to Group 5 TV API!' });
-});
+// app.use(checkApiKey); // ← comment out
 
-// Mount the shows routes
+app.get('/', (req, res) => res.json({ message: 'Welcome to Group 5 TV API!' }));
 app.use('/api/v1/shows', showsRouter);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+app.listen(process.env.PORT || 3000);

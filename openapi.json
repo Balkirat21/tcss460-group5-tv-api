@@ -1,0 +1,164 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+      "title": "TV Shows API",
+      "version": "1.0.0",
+      "description": "API for retrieving TV show information with filtering and pagination capabilities."
+    },
+    "servers": [
+      { 
+        "url": "http://localhost:3000",
+        "description": "Local development server"
+      },
+      { 
+        "url": "https://YOUR-LIVE-URL-HERE",
+        "description": "Production server"
+      }
+    ],
+    "paths": {
+      "/": {
+        "get": {
+          "summary": "API Health Check",
+          "description": "Returns a welcome message to verify the API is running",
+          "responses": {
+            "200": {
+              "description": "Welcome message",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Welcome to Group 5 TV API!"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/shows": {
+        "get": {
+          "summary": "Get TV shows with filtering and pagination",
+          "description": "Retrieve a paginated list of TV shows with optional filtering by name and genre",
+          "parameters": [
+            {
+              "in": "query",
+              "name": "page",
+              "schema": { "type": "integer", "minimum": 1, "default": 1 },
+              "description": "Page number (1-based)"
+            },
+            {
+              "in": "query",
+              "name": "pageSize",
+              "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+              "description": "Number of items per page"
+            },
+            {
+              "in": "query",
+              "name": "name",
+              "schema": { "type": "string" },
+              "description": "Filter shows by name (case-insensitive substring match)"
+            },
+            {
+              "in": "query",
+              "name": "genre",
+              "schema": { "type": "string" },
+              "description": "Filter shows by genre (case-insensitive substring match)"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved TV shows",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "totalRecords": { "type": "integer", "example": 412 },
+                      "currentPage": { "type": "integer", "example": 1 },
+                      "totalPages": { "type": "integer", "example": 17 },
+                      "pageSize": { "type": "integer", "example": 25 },
+                      "results": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/TVShow" }
+                      }
+                    },
+                    "required": ["totalRecords", "currentPage", "totalPages", "pageSize", "results"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/v1/shows/{id}": {
+        "get": {
+          "summary": "Get a TV show by ID",
+          "description": "Retrieve a single TV show by its unique identifier",
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "string" },
+              "description": "The unique identifier of the TV show"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "TV show found",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/TVShow" }
+                }
+              }
+            },
+            "404": {
+              "description": "TV show not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Show not found" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "TVShow": {
+          "type": "object",
+          "description": "A TV show object containing show information",
+          "properties": {
+            "ID": { 
+              "type": "string", 
+              "description": "Unique identifier for the show",
+              "example": "12345" 
+            },
+            "Name": { 
+              "type": "string", 
+              "description": "Name of the TV show",
+              "example": "Breaking Bad" 
+            },
+            "Genres": { 
+              "type": "string", 
+              "description": "Comma-separated list of genres",
+              "example": "Drama, Crime" 
+            }
+          },
+          "additionalProperties": true,
+          "required": ["ID", "Name"]
+        }
+      }
+    }
+  }
