@@ -11,7 +11,7 @@
         "description": "Local development server"
       },
       { 
-        "url": "https://YOUR-LIVE-URL-HERE",
+        "url": "https://helloworld-api-su2v.onrender.com",
         "description": "Production server"
       }
     ],
@@ -20,6 +20,10 @@
         "get": {
           "summary": "API Health Check",
           "description": "Returns a welcome message to verify the API is running",
+          "security": [
+            { "ApiKeyHeader": [] },
+            { "ApiKeyQuery": [] }
+          ],
           "responses": {
             "200": {
               "description": "Welcome message",
@@ -36,6 +40,22 @@
                   }
                 }
               }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Unauthorized: Invalid or missing API key"
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -44,6 +64,10 @@
         "get": {
           "summary": "Get TV shows with filtering and pagination",
           "description": "Retrieve a paginated list of TV shows with optional filtering by name and genre",
+          "security": [
+            { "ApiKeyHeader": [] },
+            { "ApiKeyQuery": [] }
+          ],
           "parameters": [
             {
               "in": "query",
@@ -91,6 +115,22 @@
                   }
                 }
               }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Unauthorized: Invalid or missing API key"
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -99,6 +139,10 @@
         "get": {
           "summary": "Get a TV show by ID",
           "description": "Retrieve a single TV show by its unique identifier",
+          "security": [
+            { "ApiKeyHeader": [] },
+            { "ApiKeyQuery": [] }
+          ],
           "parameters": [
             {
               "in": "path",
@@ -114,6 +158,22 @@
               "content": {
                 "application/json": {
                   "schema": { "$ref": "#/components/schemas/TVShow" }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Unauthorized: Invalid or missing API key"
+                      }
+                    }
+                  }
                 }
               }
             },
@@ -140,24 +200,38 @@
           "type": "object",
           "description": "A TV show object containing show information",
           "properties": {
-            "ID": { 
-              "type": "string", 
+            "ID": {
+              "type": "string",
               "description": "Unique identifier for the show",
-              "example": "12345" 
+              "example": "12345"
             },
-            "Name": { 
-              "type": "string", 
+            "Name": {
+              "type": "string",
               "description": "Name of the TV show",
-              "example": "Breaking Bad" 
+              "example": "Breaking Bad"
             },
-            "Genres": { 
-              "type": "string", 
+            "Genres": {
+              "type": "string",
               "description": "Comma-separated list of genres",
-              "example": "Drama, Crime" 
+              "example": "Drama, Crime"
             }
           },
           "additionalProperties": true,
           "required": ["ID", "Name"]
+        }
+      },
+      "securitySchemes": {
+        "ApiKeyHeader": {
+          "type": "apiKey",
+          "in": "header",
+          "name": "x-api-key",
+          "description": "API key passed in the x-api-key header"
+        },
+        "ApiKeyQuery": {
+          "type": "apiKey",
+          "in": "query",
+          "name": "apikey",
+          "description": "API key passed as a query parameter"
         }
       }
     }
