@@ -1,4 +1,4 @@
-node_modules/cle
+node_modules/
 .env
 .DS_Store
 .idea/

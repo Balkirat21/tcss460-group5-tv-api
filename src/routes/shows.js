@@ -58,6 +58,33 @@ router.get('/', (req, res) => {
     });
 });
 
+// GET shows by year
+router.get('/showbyyear/:year', (req, res) => {
+    const year = req.params.year;
+
+    // Filter shows by year from the "First Air Date" field
+    const showsByYear = tvShows.filter(show => {
+        if (show['First Air Date']) {
+            const showYear = show['First Air Date'].substring(0, 4);
+            return showYear === year;
+        }
+        return false;
+    });
+
+    if (showsByYear.length === 0) {
+        return res.status(404).json({
+            error: 'No shows found for this year',
+            year: year
+        });
+    }
+
+    res.json({
+        year: year,
+        count: showsByYear.length,
+        shows: showsByYear
+    });
+});
+
 // GET one show by ID
 router.get('/:id', (req, res) => {
     const show = tvShows.find(s => s.ID === req.params.id);
