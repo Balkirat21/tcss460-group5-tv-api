@@ -16,9 +16,10 @@ app.use(cors());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
- app.use(checkApiKey); 
-
 app.get('/', (req, res) => res.json({ message: 'Welcome to Group 5 TV API!' }));
+
+app.use(checkApiKey);
+
 app.use('/api/v1/shows', showsRouter);
 
 const PORT = process.env.PORT || 3000;
