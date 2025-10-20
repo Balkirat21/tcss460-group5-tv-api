@@ -15,7 +15,7 @@ The Web API is built using **Node.js** and **Express**, connected to a **Postgre
 **Group Members**
 
 - **Balkirat Singh** – Created and exported the comprehensive Postman test collection (`Testing/postman/postman.json`) with automated tests for all implemented routes including the root endpoint, pagination, filtering by name/genre, and database queries. Helped implement and test the main API endpoints (GET all shows with pagination/filtering, GET show by ID) excluding the `/showbyyear` route. Updated the README.md to document Beta Sprint deliverables, contributions, and meeting details.
-- **Kobe Benavente** – Configured the web API and Postgresql database to be successfully hosted via Render. Helped teammembers in getting their Web API's to run on their local machines for testing. Also helped merge all changes in the repository so that everyone's contributions came together smoothly and still remained functional. 
+- **Kobe Benavente** – Configured the web API and Postgresql database to be successfully hosted via Render. Helped team members in getting their Web API's to run on their local machines for testing. Also helped merge all changes in the repository so that everyone's contributions came together smoothly and still remained functional. 
 
 ---
 
