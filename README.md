@@ -46,6 +46,7 @@ The Web API is built using **Node.js** and **Express**, connected to a **Postgre
 - Successfully migrated from CSV-based data loading to a cloud-hosted PostgreSQL database.
 - Implemented multiple working routes that query the database with variable results (pagination, filtering by name/genre, filtering by year).
 - Created comprehensive Postman test collection with automated test scripts for all routes.
+- Both the local development server and the deployed Render server are fully functional for testing all API endpoints. To run the API locally, clone the repository, run npm install, then npm start, and you can access Swagger documentation at http://localhost:3000/api-docs. The production version is live at https://helloworld-api-su2v.onrender.com, with Swagger available at /api-docs as well. To test secured routes in either environment, open the Swagger UI, click Authorize, and enter the API key dev-12345 in either the header (x-api-key) or query (apikey) field—only one is required. After authorizing, you can directly run and test all available endpoints without needing external tools like Postman.
 - Hosted live API documentation using Swagger UI at `/api-docs` route.
 - The welcome page (root endpoint `/`) is now publicly accessible without requiring an API key for easier testing.
 - API is successfully deployed on Render and connected to an external PostgreSQL database.
@@ -89,6 +90,8 @@ tcss460-group5-tv-api/
 This project represents the **Beta Sprint milestone** for Group 5's Dataset Web API in TCSS 460.
 During this sprint, the team successfully transitioned from a CSV-based prototype to a fully functional, cloud-hosted Web API connected to a PostgreSQL database. The API is now deployed on **Render** and serves over 7,000 television show records from an external database with full query support.
 
+Both the local development server and the deployed Render server are fully functional for testing all API endpoints. To run the API locally, clone the repository, run npm install, then npm start, and you can access Swagger documentation at http://localhost:3000/api-docs. The production version is live at https://helloworld-api-su2v.onrender.com, with Swagger available at /api-docs as well. To test secured routes in either environment, open the Swagger UI, click Authorize, and enter the API key dev-12345 in either the header (x-api-key) or query (apikey) field—only one is required. After authorizing, you can directly run and test all available endpoints without needing external tools like Postman.
+ 
 The API includes multiple working routes that query the database and return variable results:
 - **GET /api/v1/shows** – Returns paginated TV show data with optional filtering by name and genre
 - **GET /api/v1/shows/:id** – Returns a single show by its database ID
