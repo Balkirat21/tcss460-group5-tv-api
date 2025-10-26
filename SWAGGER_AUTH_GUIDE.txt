@@ -1,0 +1,74 @@
+========================================
+HOW TO AUTHORIZE IN SWAGGER UI
+========================================
+
+PROBLEM:
+You're getting 401 errors when trying to use PUT or any endpoint in Swagger UI.
+
+REASON:
+Swagger UI doesn't automatically send the API key. You need to manually authorize.
+
+SOLUTION - STEP BY STEP:
+========================================
+
+STEP 1: Open Swagger UI
+   - Go to: http://localhost:3000/api-docs
+
+STEP 2: Click the "Authorize" Button
+   - Look for the GREEN button at the top-right
+   - Text says: "🔒 Authorize"
+   - Click it!
+
+STEP 3: Fill in the API Key
+   - You'll see a popup window
+   - It has a text field labeled "Value:"
+   - Type exactly: 1234
+   - Do NOT type: "1234" (without quotes)
+   - Just the number: 1234
+
+STEP 4: Click "Authorize"
+   - Click the green "Authorize" button in the popup
+   - Then click "Close"
+
+STEP 5: Test Again
+   - Now try your PUT request
+   - It should work!
+
+VISUAL GUIDE:
+========================================
+Before authorizing:
+[🔒 Authorize]  ← Click this button
+
+After clicking, popup appears:
+┌────────────────────────────────────┐
+│ ApiKeyAuth                        │
+│                                    │
+│ Value: [1234              ]        │
+│        ↑ Type your API key here    │
+│                                    │
+│ [Authorize]  [Close]              │
+└────────────────────────────────────┘
+
+After authorizing:
+✅ api_key (ApiKeyAuth)
+  show  ← Click to see your key
+
+========================================
+
+ALTERNATIVE: Use test-api.html instead!
+- This file automatically includes the API key
+- No authorization needed
+- Just open it and click "Execute"
+
+To open test-api.html:
+1. Find the file test-api.html in your project
+2. Double-click to open in browser
+3. Or type in terminal: open test-api.html
+
+========================================
+
+YOUR API KEY: 1234
+YOUR SERVER: http://localhost:3000
+
+Everything else is working perfectly!
+The only issue is that Swagger UI requires manual authorization.

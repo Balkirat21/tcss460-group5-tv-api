@@ -1,97 +1,603 @@
 {
-    "info": {
-      "name": "Beta Sprint – TV API",
-      "_postman_id": "a1111111-b222-4c33-d444-eeeeeeeeeeee",
-      "description": "Tests for root and a variable /api/v1/{{resource}}/by-year route.",
-      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  "info": {
+    "name": "TV Shows API - Beta Sprint",
+    "description": "Comprehensive tests for the TV Shows API endpoints including CRUD operations and authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "api_key", "value": "1234" }
+  ],
+  "item": [
+    {
+      "name": "Root - Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/", "host": ["{{base_url}}"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.code === 200);",
+              "const body = pm.response.json();",
+              "pm.test('Has welcome message', () => typeof body.message === 'string' && body.message.length > 0);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
     },
-    "variable": [
-      { "key": "base_url", "value": "http://localhost:3000" },
-      { "key": "api_key", "value": "REPLACE_ME" },
-      { "key": "resource", "value": "shows" }
-    ],
-    "item": [
-      {
-        "name": "Root – health",
-        "request": {
-          "method": "GET",
-          "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
-          "url": { "raw": "{{base_url}}/", "host": ["{{base_url}}"] }
-        },
-        "event": [
-          {
-            "listen": "test",
-            "script": {
-              "exec": [
-                "pm.test('status 200', () => pm.response.code === 200);",
-                "const body = pm.response.json();",
-                "pm.test('has welcome message', () => typeof body.message === 'string' && body.message.length > 0);"
-              ],
-              "type": "text/javascript"
-            }
-          }
-        ]
+    {
+      "name": "Get All Shows - Default Pagination (No Auth)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/api/v1/shows", "host": ["{{base_url}}"] }
       },
-      {
-        "name": "{{resource}} by year – returns ≥ 1",
-        "request": {
-          "method": "GET",
-          "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
-          "url": {
-            "raw": "{{base_url}}/api/v1/{{resource}}/by-year?year=1999",
-            "host": ["{{base_url}}"],
-            "path": ["api", "v1", "{{resource}}", "by-year"],
-            "query": [{ "key": "year", "value": "1999" }]
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', () => pm.response.code === 401);",
+              "const body = pm.response.json();",
+              "pm.test('Error message present', () => {",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.include('Unauthorized');",
+              "});"
+            ],
+            "type": "text/javascript"
           }
-        },
-        "event": [
+        }
+      ]
+    },
+    {
+      "name": "Get All Shows - Default Pagination",
+      "request": {
+        "method": "GET",
+        "header": [
           {
-            "listen": "test",
-            "script": {
-              "exec": [
-                "pm.test('status 200', () => pm.response.code === 200);",
-                "const data = pm.response.json();",
-                "pm.expect(Array.isArray(data)).to.be.true;",
-                "pm.test('at least one row', () => pm.expect(data.length).to.be.above(0));",
-                "if (data.length) {",
-                "  const row = data[0];",
-                "  pm.test('has id', () => pm.expect(row).to.have.property('id'));",
-                "  pm.test('has title', () => pm.expect(row).to.have.property('title'));",
-                "  pm.test('has release_year', () => pm.expect(row).to.have.property('release_year'));",
-                "}"
-              ],
-              "type": "text/javascript"
-            }
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
           }
-        ]
+        ],
+        "url": { "raw": "{{base_url}}/api/v1/shows", "host": ["{{base_url}}"] }
       },
-      {
-        "name": "{{resource}} by year – empty",
-        "request": {
-          "method": "GET",
-          "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
-          "url": {
-            "raw": "{{base_url}}/api/v1/{{resource}}/by-year?year=1800",
-            "host": ["{{base_url}}"],
-            "path": ["api", "v1", "{{resource}}", "by-year"],
-            "query": [{ "key": "year", "value": "1800" }]
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.code === 200);",
+              "const body = pm.response.json();",
+              "pm.test('Response has pagination info', () => {",
+              "  pm.expect(body).to.have.property('totalRecords');",
+              "  pm.expect(body).to.have.property('currentPage');",
+              "  pm.expect(body).to.have.property('totalPages');",
+              "  pm.expect(body).to.have.property('pageSize');",
+              "  pm.expect(body).to.have.property('results');",
+              "});",
+              "pm.test('Results is an array', () => Array.isArray(body.results));"
+            ],
+            "type": "text/javascript"
           }
-        },
-        "event": [
+        }
+      ]
+    },
+    {
+      "name": "Get Shows with Pagination - Page 2",
+      "request": {
+        "method": "GET",
+        "header": [
           {
-            "listen": "test",
-            "script": {
-              "exec": [
-                "pm.test('status 200', () => pm.response.code === 200);",
-                "const data = pm.response.json();",
-                "pm.expect(Array.isArray(data)).to.be.true;",
-                "pm.test('empty array', () => pm.expect(data.length).to.equal(0));"
-              ],
-              "type": "text/javascript"
-            }
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
           }
-        ]
-      }
-    ]
-  }
-  
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows?page=2&pageSize=10",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows"],
+          "query": [
+            { "key": "page", "value": "2" },
+            { "key": "pageSize", "value": "10" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.code === 200);",
+              "const body = pm.response.json();",
+              "pm.test('Current page is 2', () => body.currentPage === 2);",
+              "pm.test('Page size is 10', () => body.pageSize === 10);",
+              "pm.test('Results array length matches pageSize', () => body.results.length <= 10);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Shows with Name Filter",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows?name=breaking",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows"],
+          "query": [{ "key": "name", "value": "breaking" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.code === 200);",
+              "const body = pm.response.json();",
+              "pm.test('Response has pagination info', () => {",
+              "  pm.expect(body).to.have.property('results');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Shows with Genre Filter",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows?genre=drama",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows"],
+          "query": [{ "key": "genre", "value": "drama" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.code === 200);",
+              "const body = pm.response.json();",
+              "pm.test('Response has pagination info', () => {",
+              "  pm.expect(body).to.have.property('results');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Show by ID - Valid",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows", "1"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 or 404', () => {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+              "});",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('Response has show data', () => {",
+              "    pm.expect(body).to.have.property('showid');",
+              "    pm.expect(body).to.have.property('name');",
+              "  });",
+              "} else {",
+              "  const body = pm.response.json();",
+              "  pm.test('Error message present', () => {",
+              "    pm.expect(body).to.have.property('error');",
+              "  });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Show by ID - Invalid",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows/invalid_id",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows", "invalid_id"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 404', () => pm.response.code === 404);",
+              "const body = pm.response.json();",
+              "pm.test('Error message present', () => {",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.equal('Show not found');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST - Create New Show",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"showid\": \"test123\",\n  \"name\": \"Test Series\",\n  \"originalname\": \"Test Series\",\n  \"firstairdate\": \"2024-01-01\",\n  \"lastairdate\": \"2024-06-01\",\n  \"seasons\": \"1\",\n  \"episodes\": \"10\",\n  \"status\": \"Ended\",\n  \"overview\": \"This is a test series\",\n  \"popularity\": \"50.0\",\n  \"tmdb_rating\": \"8.0\",\n  \"vote_count\": \"100\",\n  \"poster_url\": \"https://example.com/poster.jpg\",\n  \"backdrop_url\": \"https://example.com/backdrop.jpg\",\n  \"genres\": \"Drama, Comedy\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', () => pm.response.code === 201);",
+              "const body = pm.response.json();",
+              "pm.test('Response has success message', () => {",
+              "  pm.expect(body).to.have.property('message');",
+              "  pm.expect(body.message).to.include('created');",
+              "});",
+              "pm.test('Response has show data', () => {",
+              "  pm.expect(body).to.have.property('show');",
+              "  pm.expect(body.show.showid).to.equal('test123');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST - Create Show (Missing Required Fields)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Series Without ID\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400', () => pm.response.code === 400);",
+              "const body = pm.response.json();",
+              "pm.test('Error message present', () => {",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.include('required');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT - Update Show",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Test Series\",\n  \"status\": \"Returning Series\",\n  \"tmdb_rating\": \"9.5\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows/test123",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows", "test123"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.code === 200);",
+              "const body = pm.response.json();",
+              "pm.test('Response has success message', () => {",
+              "  pm.expect(body).to.have.property('message');",
+              "  pm.expect(body.message).to.include('updated');",
+              "});",
+              "pm.test('Response has updated show data', () => {",
+              "  pm.expect(body).to.have.property('show');",
+              "  pm.expect(body.show.name).to.equal('Updated Test Series');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT - Update Non-Existent Show",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Series\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows/nonexistent123",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows", "nonexistent123"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 404', () => pm.response.code === 404);",
+              "const body = pm.response.json();",
+              "pm.test('Error message present', () => {",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.equal('Show not found');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT - Update with Empty Body",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows/test123",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows", "test123"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400', () => pm.response.code === 400);",
+              "const body = pm.response.json();",
+              "pm.test('Error message present', () => {",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.include('No fields');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE - Delete Show",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows/test123",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows", "test123"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.code === 200);",
+              "const body = pm.response.json();",
+              "pm.test('Response has success message', () => {",
+              "  pm.expect(body).to.have.property('message');",
+              "  pm.expect(body.message).to.include('deleted');",
+              "});",
+              "pm.test('Response has deleted show data', () => {",
+              "  pm.expect(body).to.have.property('deleted');",
+              "  pm.expect(body.deleted.showid).to.equal('test123');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE - Delete Non-Existent Show",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows/nonexistent123",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows", "nonexistent123"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 404', () => pm.response.code === 404);",
+              "const body = pm.response.json();",
+              "pm.test('Error message present', () => {",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.equal('Show not found');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Key Authentication - Invalid Key",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "invalid-key-12345",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/shows",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "shows"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', () => pm.response.code === 401);",
+              "const body = pm.response.json();",
+              "pm.test('Error message present', () => {",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.include('Unauthorized');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

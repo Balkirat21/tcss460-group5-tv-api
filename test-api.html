@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TV Shows API - Interactive Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #fafafa;
+            color: #3b4151;
+        }
+        
+        .swagger-ui-wrap {
+            max-width: 1460px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .swagger-ui .topbar {
+            background: #89bf04;
+            padding: 10px 0;
+        }
+        
+        .swagger-ui .topbar-wrapper {
+            display: block;
+            max-width: 1460px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .swagger-ui .topbar .download-url-wrapper {
+            display: none;
+        }
+        
+        .swagger-ui .info {
+            margin: 50px 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 30px;
+        }
+        
+        .swagger-ui .info hgroup.main {
+            margin: 0 0 20px;
+        }
+        
+        .swagger-ui .info .title {
+            font-size: 36px;
+            font-weight: 400;
+            color: #3b4151;
+        }
+        
+        .swagger-ui .info .description {
+            font-size: 16px;
+            margin: 15px 0 0;
+            color: #3b4151;
+        }
+        
+        .swagger-ui .scheme-container {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .swagger-ui .scheme-container .schemes {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .swagger-ui .scheme-container .scheme-description {
+            color: #3b4151;
+            font-size: 14px;
+        }
+        
+        .swagger-ui .opblock {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin: 0 0 15px;
+        }
+        
+        .swagger-ui .opblock.opblock-get {
+            border-color: #61affe;
+        }
+        
+        .swagger-ui .opblock.opblock-post {
+            border-color: #49cc90;
+        }
+        
+        .swagger-ui .opblock.opblock-put {
+            border-color: #fca130;
+        }
+        
+        .swagger-ui .opblock.opblock-delete {
+            border-color: #f93e3e;
+        }
+        
+        .swagger-ui .opblock .opblock-summary {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .swagger-ui .opblock .opblock-summary .opblock-summary-method {
+            font-size: 14px;
+            font-weight: 700;
+            min-width: 80px;
+            padding: 6px 15px;
+            text-align: center;
+            border-radius: 3px;
+            background: #3b4151;
+            color: #fff;
+            text-transform: uppercase;
+        }
+        
+        .swagger-ui .opblock.opblock-get .opblock-summary .opblock-summary-method {
+            background: #61affe;
+        }
+        
+        .swagger-ui .opblock.opblock-post .opblock-summary .opblock-summary-method {
+            background: #49cc90;
+        }
+        
+        .swagger-ui .opblock.opblock-put .opblock-summary .opblock-summary-method {
+            background: #fca130;
+        }
+        
+        .swagger-ui .opblock.opblock-delete .opblock-summary .opblock-summary-method {
+            background: #f93e3e;
+        }
+        
+        .swagger-ui .opblock .opblock-summary .opblock-summary-path {
+            font-size: 16px;
+            font-weight: 400;
+            padding-left: 10px;
+            color: #3b4151;
+            word-break: break-all;
+        }
+        
+        .swagger-ui .opblock .opblock-summary .opblock-summary-description {
+            padding-left: 20px;
+            color: #3b4151;
+            font-size: 13px;
+        }
+        
+        .swagger-ui .opblock-body {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .swagger-ui .opblock-body .btn {
+            background: #89bf04;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .swagger-ui .opblock-body .btn:hover {
+            background: #6b9900;
+        }
+        
+        .swagger-ui .responses-wrapper {
+            margin-top: 20px;
+        }
+        
+        .swagger-ui .responses-wrapper .opblock-section-header {
+            background: #fafafa;
+            padding: 10px 20px;
+            border: 1px solid #e0e0e0;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        
+        .swagger-ui .responses-wrapper .opblock-section-header h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3b4151;
+        }
+        
+        .swagger-ui .responses-wrapper pre {
+            background: #263238;
+            color: #aed581;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 400px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
+        .swagger-ui .responses-wrapper pre.status {
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 11px;
+            margin: 10px 0;
+        }
+        
+        .swagger-ui .responses-wrapper pre.status-200 {
+            background: #4CAF50;
+        }
+        
+        .swagger-ui .responses-wrapper pre.status-400 {
+            background: #ff9800;
+        }
+        
+        .swagger-ui .responses-wrapper pre.status-401 {
+            background: #f44336;
+        }
+        
+        .swagger-ui .responses-wrapper pre.status-404 {
+            background: #f44336;
+        }
+        
+        .swagger-ui .loading {
+            text-align: center;
+            padding: 20px;
+            color: #3b4151;
+        }
+        
+        .swagger-ui .hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="swagger-ui">
+        <div class="topbar">
+            <div class="topbar-wrapper">
+                <div class="topbar-wrapper__link"></div>
+            </div>
+        </div>
+        
+        <div class="swagger-ui-wrap">
+            <section class="info">
+                <hgroup class="main">
+                    <h2 class="title">TV Shows API</h2>
+                </hgroup>
+                <p class="description">
+                    API for managing TV show information with full CRUD operations, filtering and pagination capabilities. 
+                    All API endpoints require authentication via API key.
+                </p>
+                <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                    <strong>Version:</strong> 1.0.0<br>
+                    <strong>API URL:</strong> http://localhost:3000<br>
+                    <strong>API Key:</strong> 1234
+                </p>
+            </section>
+
+            <div class="scheme-container">
+                <div class="schemes">
+                    <label>Servers:</label>
+                    <select class="schemes-select" style="margin-left: 10px; padding: 5px;">
+                        <option>http://localhost:3000</option>
+                    </select>
+                    <span class="scheme-description">Local development server</span>
+                </div>
+            </div>
+
+            <div class="opblock opblock-get">
+                <div class="opblock-summary" onclick="toggleSection('root')">
+                    <span class="opblock-summary-method">GET</span>
+                    <span class="opblock-summary-path">/</span>
+                    <span class="opblock-summary-description">API Health Check</span>
+                </div>
+                <div class="opblock-body hide" id="root">
+                    <div class="opblock-description-wrapper">
+                        <p>Returns a welcome message to verify the API is running.</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="executeTest('root')">Execute</button>
+                    </div>
+                    <div class="responses-wrapper" id="root-response"></div>
+                </div>
+            </div>
+
+            <div class="opblock opblock-get">
+                <div class="opblock-summary" onclick="toggleSection('getAll')">
+                    <span class="opblock-summary-method">GET</span>
+                    <span class="opblock-summary-path">/api/v1/shows</span>
+                    <span class="opblock-summary-description">Get TV shows with filtering and pagination</span>
+                </div>
+                <div class="opblock-body hide" id="getAll">
+                    <div class="opblock-description-wrapper">
+                        <p>Retrieve a paginated list of TV shows with optional filtering by name and genre. 
+                        Requires API key authentication.</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="executeTest('getAll')">Execute</button>
+                    </div>
+                    <div class="responses-wrapper" id="getAll-response"></div>
+                </div>
+            </div>
+
+            <div class="opblock opblock-get">
+                <div class="opblock-summary" onclick="toggleSection('getById')">
+                    <span class="opblock-summary-method">GET</span>
+                    <span class="opblock-summary-path">/api/v1/shows/{id}</span>
+                    <span class="opblock-summary-description">Get a TV show by ID</span>
+                </div>
+                <div class="opblock-body hide" id="getById">
+                    <div class="opblock-description-wrapper">
+                        <p>Retrieve a single TV show by its unique identifier. Currently configured to fetch show with ID 2 (Breaking Bad).</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="executeTest('getById')">Execute</button>
+                    </div>
+                    <div class="responses-wrapper" id="getById-response"></div>
+                </div>
+            </div>
+
+            <div class="opblock opblock-post">
+                <div class="opblock-summary" onclick="toggleSection('create')">
+                    <span class="opblock-summary-method">POST</span>
+                    <span class="opblock-summary-path">/api/v1/shows</span>
+                    <span class="opblock-summary-description">Create a new TV show</span>
+                </div>
+                <div class="opblock-body hide" id="create">
+                    <div class="opblock-description-wrapper">
+                        <p>Add a new TV show to the database. Requires API key and show details.</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="executeTest('create')">Execute</button>
+                    </div>
+                    <div class="responses-wrapper" id="create-response"></div>
+                </div>
+            </div>
+
+            <div class="opblock opblock-put">
+                <div class="opblock-summary" onclick="toggleSection('update')">
+                    <span class="opblock-summary-method">PUT</span>
+                    <span class="opblock-summary-path">/api/v1/shows/{id}</span>
+                    <span class="opblock-summary-description">Update a TV show</span>
+                </div>
+                <div class="opblock-body hide" id="update">
+                    <div class="opblock-description-wrapper">
+                        <p>Update an existing TV show. Will update show with ID 2. Changes: name and status.</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="executeTest('update')">Execute</button>
+                    </div>
+                    <div class="responses-wrapper" id="update-response"></div>
+                </div>
+            </div>
+
+            <div class="opblock opblock-delete">
+                <div class="opblock-summary" onclick="toggleSection('delete')">
+                    <span class="opblock-summary-method">DELETE</span>
+                    <span class="opblock-summary-path">/api/v1/shows/{id}</span>
+                    <span class="opblock-summary-description">Delete a TV show</span>
+                </div>
+                <div class="opblock-body hide" id="delete">
+                    <div class="opblock-description-wrapper">
+                        <p>Delete a TV show from the database. This will delete show with ID 2.</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="executeTest('delete')">Execute</button>
+                    </div>
+                    <div class="responses-wrapper" id="delete-response"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        const API_KEY = '1234';
+        
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.classList.toggle('hide');
+        }
+        
+        function showResponse(sectionId, status, data) {
+            const wrapper = document.getElementById(sectionId + '-response');
+            wrapper.innerHTML = `
+                <div class="opblock-section-header">
+                    <h4>Response</h4>
+                </div>
+                <pre class="status status-${status}">${status}</pre>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+        
+        async function executeTest(type) {
+            let response, data;
+            
+            try {
+                switch(type) {
+                    case 'root':
+                        response = await fetch(`${API_URL}/`);
+                        data = await response.json();
+                        showResponse('root', response.status, data);
+                        break;
+                        
+                    case 'getAll':
+                        response = await fetch(`${API_URL}/api/v1/shows`, {
+                            headers: { 'x-api-key': API_KEY }
+                        });
+                        data = await response.json();
+                        showResponse('getAll', response.status, data);
+                        break;
+                        
+                    case 'getById':
+                        response = await fetch(`${API_URL}/api/v1/shows/2`, {
+                            headers: { 'x-api-key': API_KEY }
+                        });
+                        data = await response.json();
+                        showResponse('getById', response.status, data);
+                        break;
+                        
+                    case 'create':
+                        response = await fetch(`${API_URL}/api/v1/shows`, {
+                            method: 'POST',
+                            headers: {
+                                'x-api-key': API_KEY,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                showid: '999' + Math.floor(Math.random() * 1000),
+                                name: 'Test Show',
+                                originalname: 'Test Show',
+                                firstairdate: '2024-01-01',
+                                status: 'Ongoing',
+                                genres: 'Comedy',
+                                overview: 'A test show created from the test page'
+                            })
+                        });
+                        data = await response.json();
+                        showResponse('create', response.status, data);
+                        break;
+                        
+                    case 'update':
+                        response = await fetch(`${API_URL}/api/v1/shows/2`, {
+                            method: 'PUT',
+                            headers: {
+                                'x-api-key': API_KEY,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name: 'Breaking Bad Updated',
+                                status: 'Returning Series',
+                                tmdb_rating: '10.0'
+                            })
+                        });
+                        data = await response.json();
+                        showResponse('update', response.status, data);
+                        break;
+                        
+                    case 'delete':
+                        response = await fetch(`${API_URL}/api/v1/shows/2`, {
+                            method: 'DELETE',
+                            headers: {
+                                'x-api-key': API_KEY
+                            }
+                        });
+                        data = await response.json();
+                        showResponse('delete', response.status, data);
+                        break;
+                }
+            } catch (error) {
+                showResponse(type, 0, { error: error.message });
+            }
+        }
+    </script>
+</body>
+</html>

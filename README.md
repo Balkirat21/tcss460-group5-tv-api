@@ -6,6 +6,13 @@ The Web API is built using **Node.js** and **Express**, and provides secure, API
 
 ---
 
+## 🔗 Links
+
+- **Data Web API (Heroku):** [Add your Heroku URL here]
+- **Credentials Web API (Heroku):** [Add your Heroku URL here]
+
+---
+
 ## 🚀 Alpha Sprint Contribution
 
 **Group Members**
@@ -42,13 +49,67 @@ Meetings occurred weekly to align progress and discuss the next sprint goals.
 
 ---
 
+## 🚀 Beta II Sprint Contribution
+
+**Group Members**
+
+- **[Member 1 Name]** – [Description of individual contribution to Beta II Sprint]
+- **[Member 2 Name]** – [Description of individual contribution to Beta II Sprint]
+- **[Member 3 Name]** – [Description of individual contribution to Beta II Sprint]
+- **[Member 4 Name]** – [Description of individual contribution to Beta II Sprint]
+
+During the Beta II Sprint, the team implemented full CRUD functionality, migrated from CSV-based storage to PostgreSQL database, added comprehensive API key authentication to all routes, and created extensive documentation with Swagger UI integration. The API now includes POST, PUT, and DELETE operations alongside the existing GET routes, with complete pagination support and error handling.
+
+---
+
+## 💬 Beta II Sprint Meetings
+
+**Where/When/How we met:**
+
+- [Describe specific meetings - dates, times, locations/virtual platforms]
+- [Example: "Weekly meetings on Discord every Tuesday at 7 PM PST, with additional Slack check-ins for quick questions"]
+
+**What was discussed:**
+
+- Implementation of full CRUD operations (POST, PUT, DELETE)
+- PostgreSQL database integration and schema design
+- API key authentication implementation across all routes
+- OpenAPI/Swagger documentation updates
+- Postman collection testing strategies
+- Deployment planning and cloud hosting setup
+- Error handling and validation strategies
+
+**Primary Communication Methods:**
+
+- **Discord:** Used for scheduled weekly meetings, code reviews, and real-time collaboration
+- **GitHub:** Used for version control, pull requests, code reviews, and issue tracking
+- **[Add other communication methods if used]:** Slack, Email, etc.
+
+---
+
+## 🧠 Beta II Sprint Comments
+
+- Successfully migrated from CSV-based in-memory storage to PostgreSQL database for persistent data storage
+- Implemented comprehensive API key authentication on all API routes (`/api/*`) while keeping the root endpoint and `/api-docs` publicly accessible
+- Encountered challenges with database connection pooling and graceful shutdown handling
+- Created dynamic SQL query builders for filtering and updating records
+- Implemented proper error handling with appropriate HTTP status codes (400, 401, 404, 409, 500)
+- Enhanced Postman collection with comprehensive tests covering all CRUD operations and authentication scenarios
+- Updated OpenAPI documentation to include all routes with security requirements and comprehensive schemas
+- Added data validation for required fields in POST requests
+- Implemented proper conflict detection for duplicate show IDs
+- Next steps include actual database deployment to Heroku/Render and testing with production environment
+- All routes now use PostgreSQL instead of CSV, making the API fully database-driven
+- API key middleware is now properly enabled, protecting all `/api/*` endpoints
+
+---
+
 ## 🗂️ Current Repository Structure
 
 ```
 tcss460-group5-tv-api/
   .idea/                    (IDE configuration files)
-  data/
-    tv_last1years.csv
+  data/                     (CSV data files)
   node_modules/
   project_files/
     WebAPI_Functionality_Plan.md
@@ -56,18 +117,38 @@ tcss460-group5-tv-api/
     Initialize_TVShowdatabase.sql
     TVShow_ERDiagram.pdf
   src/
+    config/
+      database.js           (Database connection configuration)
     middleware/
+      authMiddleware.js     (API key authentication middleware)
     routes/
-    app.js
-  .env
+      shows.js              (TV shows CRUD routes)
+    app.js                  (Main application entry point)
+  Testing/
+    postman/
+      postman.json          (Postman collection with comprehensive tests)
+  .env                      (Environment variables - not in git)
   .gitignore
   package.json
   package-lock.json
+  openapi.json             (OpenAPI/Swagger specification)
   README.md
+  SETUP.md                  (Setup and deployment guide)
 ```
+## 🚀 Quick Start
+
+See [SETUP.md](SETUP.md) for detailed installation and deployment instructions.
+
+**Quick Setup:**
+1. Install dependencies: `npm install`
+2. Create `.env` file with your API_KEY and DATABASE_URL
+3. Initialize database: `psql your_db < project_files/Initialize_TVShowdatabase.sql`
+4. Start server: `npm start`
+5. Visit `http://localhost:3000/api-docs` for API documentation
+
 ## 🧩 Summary
 
-This project represents the **Alpha Sprint milestone** for Group 5’s Dataset Web API in TCSS 460.  
+This project represents the **Alpha Sprint milestone** for Group 5's Dataset Web API in TCSS 460.  
 Throughout this sprint, the team collaborated to design, build, and document the foundation of a fully functional backend service focused on the TV dataset (`tv_last1years.csv`). Using **Node.js** and **Express**, the API securely loads, parses, and serves over 7,000 television show records while supporting paginated responses through query parameters.  
 
 The API was secured using an **API key authentication system**, ensuring that only authorized users can access endpoints. The functionality was thoroughly tested using **Postman**, verifying the performance of the `/api/v1/shows` route and confirming that pagination and response structures worked as intended.  
