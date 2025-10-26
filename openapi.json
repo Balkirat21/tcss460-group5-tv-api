@@ -133,6 +133,79 @@
               }
             }
           }
+        },
+        "post": {
+          "summary": "Create a new TV show",
+          "description": "Add a new TV show to the database",
+          "security": [
+            { "ApiKeyHeader": [] },
+            { "ApiKeyQuery": [] }
+          ],
+          "requestBody": {
+            "description": "TV show data to create",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["name"],
+                  "properties": {
+                    "name": { "type": "string", "example": "The Last of Us" },
+                    "original_name": { "type": "string", "example": "The Last of Us" },
+                    "genres": { "type": "string", "example": "Drama;Sci-Fi" },
+                    "first_air_date": { "type": "string", "format": "date", "example": "2023-01-15" },
+                    "overview": { "type": "string", "example": "After a global pandemic destroys civilization..." },
+                    "vote_average": { "type": "number", "example": 8.8 },
+                    "vote_count": { "type": "integer", "example": 5000 },
+                    "popularity": { "type": "number", "example": 150.5 },
+                    "status": { "type": "string", "example": "Returning Series" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Show created successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string", "example": "Show created successfully" },
+                      "show": { "$ref": "#/components/schemas/TVShow" }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request - Missing required fields",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Name is required" }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Unauthorized: Invalid or missing API key" }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "/api/v1/shows/{id}": {
@@ -191,6 +264,297 @@
               }
             }
           }
+        },
+        "put": {
+          "summary": "Update a TV show",
+          "description": "Update an existing TV show by its unique identifier",
+          "security": [
+            { "ApiKeyHeader": [] },
+            { "ApiKeyQuery": [] }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" },
+              "description": "The unique identifier of the TV show"
+            }
+          ],
+          "requestBody": {
+            "description": "TV show fields to update",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string", "example": "Breaking Bad" },
+                    "original_name": { "type": "string", "example": "Breaking Bad" },
+                    "genres": { "type": "string", "example": "Drama;Crime" },
+                    "first_air_date": { "type": "string", "format": "date", "example": "2008-01-20" },
+                    "overview": { "type": "string", "example": "A high school chemistry teacher turned meth maker" },
+                    "vote_average": { "type": "number", "example": 9.5 },
+                    "vote_count": { "type": "integer", "example": 15000 },
+                    "popularity": { "type": "number", "example": 250.5 },
+                    "status": { "type": "string", "example": "Ended" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Show updated successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string", "example": "Show updated successfully" },
+                      "show": { "$ref": "#/components/schemas/TVShow" }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request - No fields to update",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "No fields to update" }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Unauthorized: Invalid or missing API key" }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "TV show not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Show not found" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "summary": "Delete a TV show",
+          "description": "Remove a TV show from the database",
+          "security": [
+            { "ApiKeyHeader": [] },
+            { "ApiKeyQuery": [] }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" },
+              "description": "The unique identifier of the TV show"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Show deleted successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string", "example": "Show deleted successfully" },
+                      "deleted": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer", "example": 1 },
+                          "name": { "type": "string", "example": "Breaking Bad" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Unauthorized: Invalid or missing API key" }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "TV show not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Show not found" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/auth/register": {
+        "post": {
+          "summary": "Register a new user",
+          "description": "Create a new user account with email validation and return a JWT token",
+          "requestBody": {
+            "description": "User registration data",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["email", "password"],
+                  "properties": {
+                    "email": { "type": "string", "format": "email", "example": "user@example.com" },
+                    "phone": { "type": "string", "example": "1234567890" },
+                    "password": { "type": "string", "format": "password", "minLength": 6, "example": "securePassword123" },
+                    "role": { "type": "string", "example": "user", "default": "user" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "User registered successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string", "example": "User registered successfully" },
+                      "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+                      "user": { "$ref": "#/components/schemas/User" }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request - Invalid input",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Invalid email format" }
+                    }
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "Conflict - User already exists",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "User with this email already exists" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/auth/login": {
+        "post": {
+          "summary": "Login user",
+          "description": "Authenticate user credentials and return a JWT token",
+          "requestBody": {
+            "description": "User login credentials",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["email", "password"],
+                  "properties": {
+                    "email": { "type": "string", "format": "email", "example": "user@example.com" },
+                    "password": { "type": "string", "format": "password", "example": "securePassword123" }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Login successful",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string", "example": "Login successful" },
+                      "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+                      "user": { "$ref": "#/components/schemas/User" }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request - Missing credentials",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Email and password are required" }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid credentials",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": { "type": "string", "example": "Invalid email or password" }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -218,6 +582,40 @@
           },
           "additionalProperties": true,
           "required": ["ID", "Name"]
+        },
+        "User": {
+          "type": "object",
+          "description": "A user object containing user information",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "Unique identifier for the user",
+              "example": 1
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "User's email address",
+              "example": "user@example.com"
+            },
+            "phone": {
+              "type": "string",
+              "description": "User's phone number",
+              "example": "1234567890"
+            },
+            "role": {
+              "type": "string",
+              "description": "User's role",
+              "example": "user"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Account creation timestamp",
+              "example": "2024-01-15T12:00:00Z"
+            }
+          },
+          "required": ["id", "email", "role"]
         }
       },
       "securitySchemes": {
