@@ -58,29 +58,44 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET shows by year
+// GET shows by year (with pagination)
 router.get('/showbyyear/:year', async (req, res) => {
     try {
         const year = req.params.year;
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 25;
 
-        // Query shows where first_air_date year matches
-        const query = `
-            SELECT * FROM tv_shows
+        // Count total shows in that year
+        const countQuery = `
+            SELECT COUNT(*) FROM tv_shows
             WHERE EXTRACT(YEAR FROM first_air_date) = $1
         `;
+        const countResult = await pool.query(countQuery, [parseInt(year)]);
+        const totalRecords = parseInt(countResult.rows[0].count);
 
-        const result = await pool.query(query, [parseInt(year)]);
-
-        if (result.rows.length === 0) {
+        if (totalRecords === 0) {
             return res.status(404).json({
                 error: 'No shows found for this year',
                 year: year
             });
         }
 
+        // Fetch paginated results
+        const offset = (page - 1) * pageSize;
+        const query = `
+            SELECT * FROM tv_shows
+            WHERE EXTRACT(YEAR FROM first_air_date) = $1
+            ORDER BY first_air_date
+            LIMIT $2 OFFSET $3
+        `;
+        const result = await pool.query(query, [parseInt(year), pageSize, offset]);
+
         res.json({
             year: year,
-            count: result.rows.length,
+            totalRecords,
+            currentPage: page,
+            totalPages: Math.ceil(totalRecords / pageSize),
+            pageSize,
             shows: result.rows
         });
     } catch (error) {
@@ -88,6 +103,7 @@ router.get('/showbyyear/:year', async (req, res) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
+
 
 // GET one show by ID
 router.get('/:id', async (req, res) => {
@@ -107,5 +123,6 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
+
 
 export default router;
