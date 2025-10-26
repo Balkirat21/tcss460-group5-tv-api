@@ -285,6 +285,114 @@
           }
         }
       },
+      "/api/v1/shows/showbyyear/{year}": {
+        "get": {
+          "summary": "Get TV shows by year with pagination",
+          "description": "Retrieve a paginated list of TV shows that first aired in a specific year. The endpoint extracts the year from the first_air_date field and matches it against the provided year parameter. Results are ordered by first_air_date and support pagination with configurable page size. Returns total record count, pagination metadata, and the shows array. Returns 404 if no shows aired in the specified year. Requires API key authentication.",
+          "security": [
+            { "ApiKeyHeader": [] }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "year",
+              "required": true,
+              "schema": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+              "description": "The year to filter shows by (e.g., 2008)",
+              "example": 2008
+            },
+            {
+              "in": "query",
+              "name": "page",
+              "schema": { "type": "integer", "minimum": 1, "default": 1 },
+              "description": "Page number (1-based)"
+            },
+            {
+              "in": "query",
+              "name": "pageSize",
+              "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+              "description": "Number of items per page"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved TV shows for the specified year",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "year": {
+                        "type": "string",
+                        "description": "The year that was queried",
+                        "example": "2008"
+                      },
+                      "totalRecords": {
+                        "type": "integer",
+                        "description": "Total number of shows that aired in this year",
+                        "example": 45
+                      },
+                      "currentPage": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "totalPages": {
+                        "type": "integer",
+                        "example": 2
+                      },
+                      "pageSize": {
+                        "type": "integer",
+                        "example": 25
+                      },
+                      "shows": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/TVShow" }
+                      }
+                    },
+                    "required": ["year", "totalRecords", "currentPage", "totalPages", "pageSize", "shows"]
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Unauthorized: Invalid or missing API key"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "No shows found for the specified year",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "No shows found for this year"
+                      },
+                      "year": {
+                        "type": "string",
+                        "example": "2008"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "/api/v1/shows/{id}": {
         "get": {
           "summary": "Get a TV show by ID",
