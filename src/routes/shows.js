@@ -58,29 +58,44 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET shows by year
+// GET shows by year (with pagination)
 router.get('/showbyyear/:year', async (req, res) => {
     try {
         const year = req.params.year;
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 25;
 
-        // Query shows where first_air_date year matches
-        const query = `
-            SELECT * FROM tv_shows
+        // Count total shows in that year
+        const countQuery = `
+            SELECT COUNT(*) FROM tv_shows
             WHERE EXTRACT(YEAR FROM first_air_date) = $1
         `;
+        const countResult = await pool.query(countQuery, [parseInt(year)]);
+        const totalRecords = parseInt(countResult.rows[0].count);
 
-        const result = await pool.query(query, [parseInt(year)]);
-
-        if (result.rows.length === 0) {
+        if (totalRecords === 0) {
             return res.status(404).json({
                 error: 'No shows found for this year',
                 year: year
             });
         }
 
+        // Fetch paginated results
+        const offset = (page - 1) * pageSize;
+        const query = `
+            SELECT * FROM tv_shows
+            WHERE EXTRACT(YEAR FROM first_air_date) = $1
+            ORDER BY first_air_date
+            LIMIT $2 OFFSET $3
+        `;
+        const result = await pool.query(query, [parseInt(year), pageSize, offset]);
+
         res.json({
             year: year,
-            count: result.rows.length,
+            totalRecords,
+            currentPage: page,
+            totalPages: Math.ceil(totalRecords / pageSize),
+            pageSize,
             shows: result.rows
         });
     } catch (error) {
@@ -105,6 +120,152 @@ router.get('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error fetching show by ID:', error);
         res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+// DELETE a TV show by ID
+router.delete('/:id', async (req, res) => {
+    try {
+        const showId = req.params.id;
+
+        // Check if the show exists first
+        const checkQuery = 'SELECT * FROM tv_shows WHERE id = $1';
+        const checkResult = await pool.query(checkQuery, [parseInt(showId)]);
+
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Show not found',
+                message: `No show exists with ID ${showId}`
+            });
+        }
+
+        // Delete the show
+        const deleteQuery = 'DELETE FROM tv_shows WHERE id = $1 RETURNING *';
+        const result = await pool.query(deleteQuery, [parseInt(showId)]);
+
+        res.json({
+            message: 'TV show deleted successfully',
+            deletedShow: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error deleting show:', error);
+        res.status(500).json({
+            error: 'Internal server error',
+            details: error.message
+        });
+    }
+});
+
+// POST a new TV show
+router.post('/', async (req, res) => {
+    try {
+        const {
+            name,
+            original_name,
+            first_air_date,
+            last_air_date,
+            seasons,
+            episodes,
+            status,
+            overview,
+            popularity,
+            tmdb_rating,
+            vote_count,
+            poster_url,
+            backdrop_url,
+            genres
+        } = req.body;
+
+        // Validate required fields
+        if (!name || !first_air_date || !overview) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Required fields: name, first_air_date, and overview'
+            });
+        }
+
+        // Validate data types for numeric fields
+        if (seasons && isNaN(parseInt(seasons))) {
+            return res.status(400).json({ error: 'Seasons must be a number' });
+        }
+        if (episodes && isNaN(parseInt(episodes))) {
+            return res.status(400).json({ error: 'Episodes must be a number' });
+        }
+        if (popularity && isNaN(parseFloat(popularity))) {
+            return res.status(400).json({ error: 'Popularity must be a number' });
+        }
+        if (tmdb_rating && (isNaN(parseFloat(tmdb_rating)) || parseFloat(tmdb_rating) < 0 || parseFloat(tmdb_rating) > 10)) {
+            return res.status(400).json({ error: 'TMDb rating must be a number between 0 and 10' });
+        }
+        if (vote_count && isNaN(parseInt(vote_count))) {
+            return res.status(400).json({ error: 'Vote count must be a number' });
+        }
+
+        // Get the next available ID
+        const maxIdResult = await pool.query('SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM tv_shows');
+        const nextId = maxIdResult.rows[0].next_id;
+
+        // Insert the new show
+        const query = `
+            INSERT INTO tv_shows (
+                id,
+                name,
+                original_name,
+                first_air_date,
+                last_air_date,
+                seasons,
+                episodes,
+                status,
+                overview,
+                popularity,
+                tmdb_rating,
+                vote_count,
+                poster_url,
+                backdrop_url,
+                genres
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            RETURNING *
+        `;
+
+        const values = [
+            nextId,
+            name,
+            original_name || name, // Default to name if original_name not provided
+            first_air_date,
+            last_air_date || null,
+            seasons || 1,
+            episodes || 1,
+            status || 'Unknown',
+            overview,
+            popularity || 0,
+            tmdb_rating || 0,
+            vote_count || 0,
+            poster_url || '',
+            backdrop_url || '',
+            genres || ''
+        ];
+
+        const result = await pool.query(query, values);
+
+        res.status(201).json({
+            message: 'TV show added successfully',
+            show: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error adding show:', error);
+
+        // Handle unique constraint violations
+        if (error.code === '23505') {
+            return res.status(409).json({
+                error: 'Conflict',
+                message: 'A show with this information already exists'
+            });
+        }
+
+        res.status(500).json({
+            error: 'Internal server error',
+            details: error.message
+        });
     }
 });
 
