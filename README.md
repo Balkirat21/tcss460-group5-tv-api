@@ -4,9 +4,11 @@ This repository contains the Group 5 Web API project for the TCSS 460 Back-End D
 Our assigned dataset is **tv_last1years.csv**, containing television shows released within the past year.
 The Web API is built using **Node.js** and **Express**, connected to a **PostgreSQL database**, and provides secure, API key–restricted access to the dataset.
 
-**🌐 Hosted Web API URL:** [https://helloworld-api-su2v.onrender.com](https://helloworld-api-su2v.onrender.com)
+**🌐 Hosted Data Web API URL (Render):** [https://helloworld-api-su2v.onrender.com](https://helloworld-api-su2v.onrender.com)
 
 **📚 API Documentation:** [https://helloworld-api-su2v.onrender.com/api-docs](https://helloworld-api-su2v.onrender.com/api-docs)
+
+**Note:** Currently hosted on Render. Migration to Heroku planned for future sprint.
 
 ---
 
@@ -23,39 +25,41 @@ The Web API is built using **Node.js** and **Express**, connected to a **Postgre
 
 ---
 
-## 💬 Beta Sprint Meetings
+## 💬 Beta II Sprint Meetings
 
 **Primary Communication Methods**
 
-- **Discord:** Used for group coordination, quick updates, and daily check-ins during the Beta Sprint.
-- **GitHub:** Used for version control, code review, pull requests, and tracking commits.
+- **Discord:** Used for group coordination, sprint planning, and real-time collaboration during Beta II Sprint.
+- **GitHub:** Used for version control, pull requests, code reviews, and tracking sprint progress.
 
 **Meeting Details**
 
-- **When/Where:** Weekly Discord voice meetings and asynchronous collaboration via Discord text channels throughout the week.
+- **When/Where:** Weekly Discord voice meetings and continuous asynchronous collaboration via Discord text channels and GitHub throughout the Beta II Sprint period.
 - **What Was Discussed:**
-  - Finalizing the PostgreSQL database setup and migrating from CSV to cloud-hosted database
-  - Implementing database query routes (GET all shows with pagination/filtering, GET by ID, GET by year)
-  - Creating the Postman test collection with comprehensive automated tests
-  - Setting up Swagger/OpenAPI documentation at the `/api-docs` route
-  - Deploying the API to Render and ensuring the database connection works in production
-  - Dividing tasks among team members for efficient completion before the deadline
+  - Implementing full CRUD functionality (POST, PUT, DELETE operations)
+  - Ensuring all routes use proper pagination strategy for 0-to-many records
+  - Protecting all routes with API Key authentication as demonstrated in Messages API
+  - Creating comprehensive Postman test collection to thoroughly test all routes
+  - Updating hosted API documentation to reflect new endpoints
+  - Addressing deficiencies found in previous sprint
+  - Coordinating individual contributions and merge strategies
+  - Planning migration from Render to Heroku for deployment consistency
 
 ---
 
-## 🧠 Beta Sprint Comments
+## 🧠 Beta II Sprint Comments
 
-- Successfully migrated from CSV-based data loading to a cloud-hosted PostgreSQL database.
-- Implemented multiple working routes that query the database with variable results (pagination, filtering by name/genre, filtering by year).
-- Created comprehensive Postman test collection with automated test scripts for all routes.
-- Both the local development server and the deployed Render server are fully functional for testing all API endpoints. To run the API locally, clone the repository, run npm install, then npm start, and you can access Swagger documentation at http://localhost:3000/api-docs. The production version is live at https://helloworld-api-su2v.onrender.com, with Swagger available at /api-docs as well. To test secured routes in either environment, open the Swagger UI, click Authorize, and enter the API key dev-12345 in either the header (x-api-key) or query (apikey) field—only one is required. After authorizing, you can directly run and test all available endpoints without needing external tools like Postman.
-- Hosted live API documentation using Swagger UI at `/api-docs` route.
-- The welcome page (root endpoint `/`) is now publicly accessible without requiring an API key for easier testing.
-- API is successfully deployed on Render and connected to an external PostgreSQL database.
-- All routes return properly formatted JSON responses with appropriate error handling.
-
+- Successfully implemented full CRUD functionality - API is now 95%+ complete as required.
+- All routes properly protected with API Key authentication strategy.
+- Comprehensive Postman test collection created at `testing/postman/TV_Shows_API_Tests.postman_collection.json` that thoroughly tests all implemented routes.
+- PUT endpoint supports partial updates with dynamic query building for optimal flexibility.
+- All numeric fields include proper validation, with special handling for tmdb_rating (0-10 range enforcement).
+- Pagination strategy implemented and documented for all routes returning multiple records.
+- OpenAPI documentation updated and hosted at `/api-docs` route reflecting all current functionality.
+- Currently hosted on Render with plans to migrate to Heroku in upcoming sprint for alignment with course requirements.
+- Database updates completed to address deficiencies from previous sprint.
+- All endpoints return consistent error messages with appropriate HTTP status codes (400, 401, 404, 500).
 ---
-
 ## 🗂️ Current Repository Structure
 
 ```
@@ -76,9 +80,9 @@ tcss460-group5-tv-api/
     routes/
       shows.js
     app.js
-  Testing/
+  testing/
     postman/
-      postman.json
+      TV_Shows_API_Tests.postman_collection.json
   .env
   .gitignore
   openapi.json
@@ -86,31 +90,30 @@ tcss460-group5-tv-api/
   package-lock.json
   README.md
 ```
+---
+## 🧩 Beta II Sprint Summary
 
-## 🧩 Beta Sprint Summary
+This project represents the **Beta II Sprint milestone** for Group 5's Dataset Web API in TCSS 460.
+During this sprint, the team successfully implemented **full CRUD functionality**, bringing the API to 95%+ completion as required. The API now supports creating, reading, updating, and deleting TV show records with comprehensive validation and error handling.
 
-This project represents the **Beta Sprint milestone** for Group 5's Dataset Web API in TCSS 460.
-During this sprint, the team successfully transitioned from a CSV-based prototype to a fully functional, cloud-hosted Web API connected to a PostgreSQL database. The API is now deployed on **Render** and serves over 7,000 television show records from an external database with full query support.
+**Key Achievements:**
 
-Both the local development server and the deployed Render server are fully functional for testing all API endpoints. To run the API locally, clone the repository, run npm install, then npm start, and you can access Swagger documentation at http://localhost:3000/api-docs. The production version is live at https://helloworld-api-su2v.onrender.com, with Swagger available at /api-docs as well. To test secured routes in either environment, open the Swagger UI, click Authorize, and enter the API key dev-12345 in either the header (x-api-key) or query (apikey) field—only one is required. After authorizing, you can directly run and test all available endpoints without needing external tools like Postman.
- 
-The API includes multiple working routes that query the database and return variable results:
-- **GET /api/v1/shows** – Returns paginated TV show data with optional filtering by name and genre
-- **GET /api/v1/shows/:id** – Returns a single show by its database ID
-- **GET /api/v1/shows/showbyyear/:year** – Returns all shows that first aired in a specific year
+- ✅ **Full CRUD Operations Implemented:**
+  - **POST /api/v1/shows** – Create new TV shows with comprehensive validation
+  - **GET /api/v1/shows** – Retrieve paginated TV show data with filtering
+  - **GET /api/v1/shows/:id** – Retrieve single show by ID
+  - **PUT /api/v1/shows/:id** – Update existing TV shows (partial updates supported)
+  - **DELETE /api/v1/shows/:id** – Delete TV shows by ID
+  - **GET /api/v1/shows/showbyyear/:year** – Filter shows by year
 
-All routes are secured with **API key authentication** (except the root welcome endpoint), ensuring only authorized users can access the data. The API was thoroughly tested using **Postman**, with a comprehensive test collection (`Testing/postman/postman.json`) that includes automated test scripts validating status codes, response structure, and data integrity.
+- ✅ **Pagination Strategy:** All routes returning multiple records implement proper pagination with configurable page size and page number parameters, fully documented in OpenAPI specification.
 
-Live API documentation was implemented using **Swagger UI** and is hosted at the `/api-docs` route, providing an interactive interface for exploring and testing all available endpoints. The documentation accurately describes request parameters, response schemas, and error handling for each route.
+- ✅ **API Key Authentication:** All routes (except welcome endpoint) are protected using the API Key strategy demonstrated in the Messages API. Supports both header (`x-api-key`) and query parameter (`apikey`) authentication.
 
-The database connection is handled through a centralized `db.js` configuration file that connects to the PostgreSQL instance hosted externally. The SQL schema was refined from the Alpha Sprint with proper data types, and the database was populated with the TV show dataset for persistent storage.
+- ✅ **Comprehensive Testing:** New Postman collection (`testing/postman/TV_Shows_API_Tests.postman_collection.json`) thoroughly tests all CRUD operations, including edge cases, validation errors, and authentication requirements.
 
-Overall, the Beta Sprint successfully delivered:
-- ✅ Cloud-hosted Web API on Render
-- ✅ External PostgreSQL database setup and population
-- ✅ Multiple working routes with database queries returning variable results
-- ✅ Comprehensive Postman test collection with automated tests
-- ✅ Live Swagger API documentation at `/api-docs`
-- ✅ Secure API key authentication for protected routes
+- ✅ **Updated Documentation:** OpenAPI documentation hosted at `/api-docs` accurately reflects all implemented endpoints with detailed request/response schemas, parameter descriptions, and error responses.
 
-The next sprint will focus on implementing full CRUD functionality (POST, PUT, DELETE operations) and adding more advanced query features such as sorting, filtering by multiple criteria, and pagination enhancements.
+- ✅ **Database Improvements:** Addressed deficiencies from previous sprint with enhanced data validation, better error handling, and optimized query performance.
+
+The API continues to be deployed on **Render** with plans to migrate to Heroku in the upcoming sprint for consistency with course requirements. All endpoints are fully functional in both local development and production environments.
