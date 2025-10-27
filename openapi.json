@@ -521,6 +521,185 @@
               }
             }
           }
+        },
+        "put": {
+          "summary": "Update a TV show by ID",
+          "description": "Update an existing TV show's information by its unique identifier. All fields are optional - only provide the fields you want to update. The endpoint first verifies the show exists before attempting the update. Validates data types for numeric fields and ensures tmdb_rating is between 0-10 if provided. Returns the complete updated show object. Returns 404 if no show exists with the specified ID, or 400 if no valid fields are provided for update. Requires API key authentication.",
+          "security": [
+            { "ApiKeyHeader": [] }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" },
+              "description": "The unique identifier of the TV show to update"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the TV show",
+                      "example": "Breaking Bad"
+                    },
+                    "original_name": {
+                      "type": "string",
+                      "description": "Original name of the TV show",
+                      "example": "Breaking Bad"
+                    },
+                    "first_air_date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "First air date (YYYY-MM-DD)",
+                      "example": "2008-01-20"
+                    },
+                    "last_air_date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Last air date (YYYY-MM-DD)",
+                      "example": "2013-09-29"
+                    },
+                    "seasons": {
+                      "type": "integer",
+                      "description": "Number of seasons",
+                      "example": 5
+                    },
+                    "episodes": {
+                      "type": "integer",
+                      "description": "Number of episodes",
+                      "example": 62
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Show status",
+                      "example": "Ended"
+                    },
+                    "overview": {
+                      "type": "string",
+                      "description": "Show overview/description",
+                      "example": "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine."
+                    },
+                    "popularity": {
+                      "type": "number",
+                      "description": "Popularity score",
+                      "example": 250.5
+                    },
+                    "tmdb_rating": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10,
+                      "description": "TMDb rating (0-10)",
+                      "example": 9.3
+                    },
+                    "vote_count": {
+                      "type": "integer",
+                      "description": "Number of votes",
+                      "example": 15000
+                    },
+                    "poster_url": {
+                      "type": "string",
+                      "description": "URL to poster image",
+                      "example": "https://example.com/poster.jpg"
+                    },
+                    "backdrop_url": {
+                      "type": "string",
+                      "description": "URL to backdrop image",
+                      "example": "https://example.com/backdrop.jpg"
+                    },
+                    "genres": {
+                      "type": "string",
+                      "description": "Semicolon-separated list of genres",
+                      "example": "Drama;Crime;Thriller"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "TV show updated successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "TV show updated successfully"
+                      },
+                      "show": {
+                        "$ref": "#/components/schemas/TVShow"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Validation error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Validation error"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "No valid fields provided for update"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Unauthorized: Invalid or missing API key"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "TV show not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Show not found"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "No show exists with ID 12345"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },

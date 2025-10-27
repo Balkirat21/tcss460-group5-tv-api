@@ -269,4 +269,153 @@ router.post('/', async (req, res) => {
     }
 });
 
+// PUT (update) a TV show by ID
+router.put('/:id', async (req, res) => {
+    try {
+        const showId = req.params.id;
+
+        // Check if the show exists first
+        const checkQuery = 'SELECT * FROM tv_shows WHERE id = $1';
+        const checkResult = await pool.query(checkQuery, [parseInt(showId)]);
+
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Show not found',
+                message: `No show exists with ID ${showId}`
+            });
+        }
+
+        const {
+            name,
+            original_name,
+            first_air_date,
+            last_air_date,
+            seasons,
+            episodes,
+            status,
+            overview,
+            popularity,
+            tmdb_rating,
+            vote_count,
+            poster_url,
+            backdrop_url,
+            genres
+        } = req.body;
+
+        // Validate data types for numeric fields if they are provided
+        if (seasons !== undefined && seasons !== null && isNaN(parseInt(seasons))) {
+            return res.status(400).json({ error: 'Seasons must be a number' });
+        }
+        if (episodes !== undefined && episodes !== null && isNaN(parseInt(episodes))) {
+            return res.status(400).json({ error: 'Episodes must be a number' });
+        }
+        if (popularity !== undefined && popularity !== null && isNaN(parseFloat(popularity))) {
+            return res.status(400).json({ error: 'Popularity must be a number' });
+        }
+        if (tmdb_rating !== undefined && tmdb_rating !== null) {
+            const rating = parseFloat(tmdb_rating);
+            if (isNaN(rating) || rating < 0 || rating > 10) {
+                return res.status(400).json({ error: 'TMDb rating must be a number between 0 and 10' });
+            }
+        }
+        if (vote_count !== undefined && vote_count !== null && isNaN(parseInt(vote_count))) {
+            return res.status(400).json({ error: 'Vote count must be a number' });
+        }
+
+        // Build dynamic update query with only provided fields
+        const updates = [];
+        const values = [];
+        let paramCounter = 1;
+
+        if (name !== undefined) {
+            updates.push(`name = $${paramCounter++}`);
+            values.push(name);
+        }
+        if (original_name !== undefined) {
+            updates.push(`original_name = $${paramCounter++}`);
+            values.push(original_name);
+        }
+        if (first_air_date !== undefined) {
+            updates.push(`first_air_date = $${paramCounter++}`);
+            values.push(first_air_date);
+        }
+        if (last_air_date !== undefined) {
+            updates.push(`last_air_date = $${paramCounter++}`);
+            values.push(last_air_date);
+        }
+        if (seasons !== undefined) {
+            updates.push(`seasons = $${paramCounter++}`);
+            values.push(parseInt(seasons));
+        }
+        if (episodes !== undefined) {
+            updates.push(`episodes = $${paramCounter++}`);
+            values.push(parseInt(episodes));
+        }
+        if (status !== undefined) {
+            updates.push(`status = $${paramCounter++}`);
+            values.push(status);
+        }
+        if (overview !== undefined) {
+            updates.push(`overview = $${paramCounter++}`);
+            values.push(overview);
+        }
+        if (popularity !== undefined) {
+            updates.push(`popularity = $${paramCounter++}`);
+            values.push(parseFloat(popularity));
+        }
+        if (tmdb_rating !== undefined) {
+            updates.push(`tmdb_rating = $${paramCounter++}`);
+            values.push(parseFloat(tmdb_rating));
+        }
+        if (vote_count !== undefined) {
+            updates.push(`vote_count = $${paramCounter++}`);
+            values.push(parseInt(vote_count));
+        }
+        if (poster_url !== undefined) {
+            updates.push(`poster_url = $${paramCounter++}`);
+            values.push(poster_url);
+        }
+        if (backdrop_url !== undefined) {
+            updates.push(`backdrop_url = $${paramCounter++}`);
+            values.push(backdrop_url);
+        }
+        if (genres !== undefined) {
+            updates.push(`genres = $${paramCounter++}`);
+            values.push(genres);
+        }
+
+        // If no fields to update, return error
+        if (updates.length === 0) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'No valid fields provided for update'
+            });
+        }
+
+        // Add the ID as the last parameter
+        values.push(parseInt(showId));
+
+        // Build and execute update query
+        const updateQuery = `
+            UPDATE tv_shows
+            SET ${updates.join(', ')}
+            WHERE id = $${paramCounter}
+            RETURNING *
+        `;
+
+        const result = await pool.query(updateQuery, values);
+
+        res.json({
+            message: 'TV show updated successfully',
+            show: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error updating show:', error);
+        res.status(500).json({
+            error: 'Internal server error',
+            details: error.message
+        });
+    }
+});
+
 export default router;
