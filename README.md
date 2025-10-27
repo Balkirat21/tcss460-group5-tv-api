@@ -16,12 +16,12 @@ The Web API is built using **Node.js** and **Express**, connected to a **Postgre
 
 **Group Members**
 
-- **Balkirat Singh** – Created and exported the comprehensive Postman test collection (`Testing/postman/postman.json`) with automated tests for all implemented routes including the root endpoint, pagination, filtering by name/genre, and database queries. Helped implement and test the main API endpoints (GET all shows with pagination/filtering, GET show by ID) excluding the `/showbyyear` route. Updated the README.md to document Beta Sprint deliverables, contributions, and meeting details.
+- **Balkirat Singh** – During this sprint, I helped across multiple parts of the API by assisting with debugging and testing the POST, PUT, DELETE, and pagination features while helping make the error handling and API key protection more consistent. I also updated portions of the documentation when new routes were added and helped teammates set up and test their routes on both local and Render environments. On top of that, I started preparing for the next sprint requirements by researching how to add login and register functionality with JWTs, planning the user credentials table for PostgreSQL, and looking into how to host the database externally the way the instructor requires.
 - **Kobe Benavente** –  Implemented the POST endpoint for creating new TV shows with comprehensive validation including required field checks, data type validation for numeric fields, and
   rating bounds enforcement (0-10). Developed the DELETE endpoint to remove TV shows by ID with pre-deletion existence verification and detailed error messages. Also coordinated with team
   members to help integrate the new endpoints and update their local projects to reflect the latest API changes.
 - **MD Khan (Shanto)** - Helped implement and test the POST, PUT, and DELETE endpoints for managing TV show data, contributing to full CRUD functionality within the API. Worked on building the routes to handle show creation, updates, and deletion with consistent validation, error handling, and database integration.
-- **Pham Nguyen** - Helped design and organize the Postman testing collection to validate all API routes. Contributed to developing and refining the API documentation to ensure clarity, consistency, and alignment with the implemented endpoints.
+- **Pham Nguyen** - Updated openapi.json with detailed API specifications to ensure accurate endpoint documentation. Modified src/routes/shows.js to enhance route functionality, including implementing a pagination strategy in the showbyyear route for efficient data handling. Conducted comprehensive testing of all routes using Postman to verify endpoint reliability and performance.
 
 ---
 
