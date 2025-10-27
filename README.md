@@ -18,7 +18,7 @@ The Web API is built using **Node.js** and **Express**, connected to a **Postgre
 - **Kobe Benavente** –  Implemented the POST endpoint for creating new TV shows with comprehensive validation including required field checks, data type validation for numeric fields, and
   rating bounds enforcement (0-10). Developed the DELETE endpoint to remove TV shows by ID with pre-deletion existence verification and detailed error messages. Also coordinated with team
   members to help integrate the new endpoints and update their local projects to reflect the latest API changes.
-- **MD Khan (Shanto)** - Created complete API documentation using OpenAPI 3.0 and Swagger UI at /api-docs. Built the main Shows API routes (/api/v1/shows and /api/v1/shows/:id) with pagination, filtering, and error handling. Helped design a Postman test collection to thoroughly test every implemented endpoint.
+- **MD Khan (Shanto)** - Helped implement and test the POST, PUT, and DELETE endpoints for managing TV show data, contributing to full CRUD functionality within the API. Worked on building the routes to handle show creation, updates, and deletion with consistent validation, error handling, and database integration.
 - **Pham Nguyen** - Helped design and organize the Postman testing collection to validate all API routes. Contributed to developing and refining the API documentation to ensure clarity, consistency, and alignment with the implemented endpoints.
 
 ---
