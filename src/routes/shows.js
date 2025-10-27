@@ -123,6 +123,77 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// PUT - Update an existing TV show by ID
+router.put('/:id', async (req, res) => {
+    try {
+        const showId = req.params.id;
+        const updates = req.body;
+
+        // Check if show exists
+        const checkQuery = 'SELECT * FROM tv_shows WHERE id = $1';
+        const checkResult = await pool.query(checkQuery, [parseInt(showId)]);
+
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Show not found',
+                message: `No show exists with ID ${showId}`
+            });
+        }
+
+        // Whitelist of allowed fields to prevent SQL injection
+        const allowedFields = [
+            'name', 'original_name', 'first_air_date', 'last_air_date',
+            'seasons', 'episodes', 'status', 'overview', 'popularity',
+            'tmdb_rating', 'vote_count', 'poster_url', 'backdrop_url', 'genres'
+        ];
+
+        // Filter out non-allowed fields
+        const updateFields = Object.keys(updates).filter(field => allowedFields.includes(field));
+
+        if (updateFields.length === 0) {
+            return res.status(400).json({
+                error: 'No valid fields to update',
+                message: `Allowed fields: ${allowedFields.join(', ')}`
+            });
+        }
+
+        // Validate data types for numeric fields
+        if (updates.seasons && isNaN(parseInt(updates.seasons))) {
+            return res.status(400).json({ error: 'Seasons must be a number' });
+        }
+        if (updates.episodes && isNaN(parseInt(updates.episodes))) {
+            return res.status(400).json({ error: 'Episodes must be a number' });
+        }
+        if (updates.popularity && isNaN(parseFloat(updates.popularity))) {
+            return res.status(400).json({ error: 'Popularity must be a number' });
+        }
+        if (updates.tmdb_rating && (isNaN(parseFloat(updates.tmdb_rating)) || parseFloat(updates.tmdb_rating) < 0 || parseFloat(updates.tmdb_rating) > 10)) {
+            return res.status(400).json({ error: 'TMDb rating must be a number between 0 and 10' });
+        }
+        if (updates.vote_count && isNaN(parseInt(updates.vote_count))) {
+            return res.status(400).json({ error: 'Vote count must be a number' });
+        }
+
+        // Build the SET clause dynamically with validated fields
+        const setClause = updateFields.map((field, index) => `${field} = $${index + 2}`).join(', ');
+        const values = [parseInt(showId), ...updateFields.map(field => updates[field])];
+
+        const updateQuery = `UPDATE tv_shows SET ${setClause} WHERE id = $1 RETURNING *`;
+        const result = await pool.query(updateQuery, values);
+
+        res.json({
+            message: 'TV show updated successfully',
+            show: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error updating show:', error);
+        res.status(500).json({
+            error: 'Internal server error',
+            details: error.message
+        });
+    }
+});
+
 // DELETE a TV show by ID
 router.delete('/:id', async (req, res) => {
     try {
