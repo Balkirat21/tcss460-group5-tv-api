@@ -449,6 +449,172 @@
             }
           }
         },
+        "put": {
+          "summary": "Update an existing TV show by ID",
+          "description": "Update one or more fields of an existing TV show in the database. Only whitelisted fields can be updated to prevent SQL injection. The endpoint validates data types for numeric fields and ensures tmdb_rating stays between 0-10. Returns the complete updated show object. At least one valid field must be provided. Returns 404 if the show doesn't exist. Requires API key authentication.",
+          "security": [
+            { "ApiKeyHeader": [] }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": { "type": "integer" },
+              "description": "The unique identifier of the TV show to update"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Breaking Bad"
+                    },
+                    "original_name": {
+                      "type": "string",
+                      "example": "Breaking Bad"
+                    },
+                    "first_air_date": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2008-01-20"
+                    },
+                    "last_air_date": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2013-09-29"
+                    },
+                    "seasons": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "episodes": {
+                      "type": "integer",
+                      "example": 62
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "Ended"
+                    },
+                    "overview": {
+                      "type": "string",
+                      "example": "Updated overview text"
+                    },
+                    "popularity": {
+                      "type": "number",
+                      "example": 250.5
+                    },
+                    "tmdb_rating": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10,
+                      "example": 9.5
+                    },
+                    "vote_count": {
+                      "type": "integer",
+                      "example": 20000
+                    },
+                    "poster_url": {
+                      "type": "string",
+                      "example": "https://example.com/new-poster.jpg"
+                    },
+                    "backdrop_url": {
+                      "type": "string",
+                      "example": "https://example.com/new-backdrop.jpg"
+                    },
+                    "genres": {
+                      "type": "string",
+                      "example": "Drama;Crime;Thriller"
+                    }
+                  },
+                  "description": "Provide only the fields you want to update. All fields are optional, but at least one must be provided."
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "TV show updated successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "TV show updated successfully"
+                      },
+                      "show": {
+                        "$ref": "#/components/schemas/TVShow"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request - Invalid fields or validation error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "No valid fields to update"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Allowed fields: name, original_name, first_air_date, ..."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid or missing API key",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Unauthorized: Invalid or missing API key"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "TV show not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Show not found"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "No show exists with ID 12345"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "delete": {
           "summary": "Delete a TV show by ID",
           "description": "Permanently remove a TV show from the database by its unique identifier. This action cannot be undone. The endpoint first verifies the show exists before attempting deletion. Returns the deleted show data in the response for confirmation purposes. Returns 404 if no show exists with the specified ID. Use this endpoint carefully as data cannot be recovered after deletion. Requires API key authentication.",

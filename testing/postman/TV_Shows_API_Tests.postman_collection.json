@@ -1,0 +1,1119 @@
+{
+	"info": {
+		"_postman_id": "tv-shows-api-tests",
+		"name": "TV Shows API - Complete Test Suite",
+		"description": "Comprehensive test suite for all TV Shows API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET All Shows",
+			"item": [
+				{
+					"name": "Get All Shows - Default Pagination",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pagination fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('totalRecords');",
+									"    pm.expect(jsonData).to.have.property('currentPage');",
+									"    pm.expect(jsonData).to.have.property('totalPages');",
+									"    pm.expect(jsonData).to.have.property('pageSize');",
+									"    pm.expect(jsonData).to.have.property('results');",
+									"});",
+									"",
+									"pm.test(\"Results is an array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.results).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Default pageSize is 25\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.pageSize).to.eql(25);",
+									"});",
+									"",
+									"pm.test(\"Current page is 1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.currentPage).to.eql(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows",
+							"host": ["{{base_url}}"],
+							"path": ["shows"]
+						}
+					}
+				},
+				{
+					"name": "Get All Shows - Custom Pagination",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Page size matches request\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.pageSize).to.eql(10);",
+									"});",
+									"",
+									"pm.test(\"Current page matches request\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.currentPage).to.eql(2);",
+									"});",
+									"",
+									"pm.test(\"Results array length <= pageSize\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.results.length).to.be.at.most(10);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows?page=2&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["shows"],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Shows - Filter by Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Results contain search term in name\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.results.length > 0) {",
+									"        jsonData.results.forEach(function(show) {",
+									"            pm.expect(show.name.toLowerCase()).to.include('breaking');",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows?name=Breaking",
+							"host": ["{{base_url}}"],
+							"path": ["shows"],
+							"query": [
+								{
+									"key": "name",
+									"value": "Breaking"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Shows - Filter by Genre",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Results contain genre in genres field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.results.length > 0) {",
+									"        jsonData.results.forEach(function(show) {",
+									"            pm.expect(show.genres.toLowerCase()).to.include('drama');",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows?genre=Drama",
+							"host": ["{{base_url}}"],
+							"path": ["shows"],
+							"query": [
+								{
+									"key": "genre",
+									"value": "Drama"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "GET Shows by Year",
+			"item": [
+				{
+					"name": "Get Shows by Year - Valid Year",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has correct structure\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('year');",
+									"    pm.expect(jsonData).to.have.property('totalRecords');",
+									"    pm.expect(jsonData).to.have.property('shows');",
+									"});",
+									"",
+									"pm.test(\"Year matches request\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.year).to.eql('2020');",
+									"});",
+									"",
+									"pm.test(\"Shows array exists\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.shows).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows/showbyyear/2020",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "showbyyear", "2020"]
+						}
+					}
+				},
+				{
+					"name": "Get Shows by Year - With Pagination",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Pagination parameters are correct\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.pageSize).to.eql(5);",
+									"    pm.expect(jsonData.currentPage).to.eql(1);",
+									"});",
+									"",
+									"pm.test(\"Shows array length <= pageSize\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.shows.length).to.be.at.most(5);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows/showbyyear/2020?page=1&pageSize=5",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "showbyyear", "2020"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Shows by Year - No Results (404)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Error message exists\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.include('No shows found');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows/showbyyear/1800",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "showbyyear", "1800"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "GET Show by ID",
+			"item": [
+				{
+					"name": "Get Show by ID - Valid ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is a show object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('overview');",
+									"});",
+									"",
+									"pm.test(\"Show ID matches request\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(1);",
+									"});",
+									"",
+									"// Save show data for later tests",
+									"pm.collectionVariables.set('test_show_id', pm.response.json().id);",
+									"pm.collectionVariables.set('test_show_name', pm.response.json().name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows/1",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Show by ID - Invalid ID (404)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Error message exists\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.eql('Show not found');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows/999999",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "999999"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "POST Create Show",
+			"item": [
+				{
+					"name": "Create Show - Valid Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has success message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message).to.include('successfully');",
+									"});",
+									"",
+									"pm.test(\"Response includes created show\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('show');",
+									"    pm.expect(jsonData.show).to.have.property('id');",
+									"});",
+									"",
+									"pm.test(\"Created show has correct name\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.show.name).to.eql('Test Show');",
+									"});",
+									"",
+									"// Save created show ID for cleanup",
+									"pm.collectionVariables.set('created_show_id', pm.response.json().show.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Show\",\n    \"original_name\": \"Test Show Original\",\n    \"first_air_date\": \"2024-01-01\",\n    \"last_air_date\": \"2024-12-31\",\n    \"seasons\": 2,\n    \"episodes\": 20,\n    \"status\": \"Ended\",\n    \"overview\": \"This is a test show for API testing purposes\",\n    \"popularity\": 85.5,\n    \"tmdb_rating\": 7.8,\n    \"vote_count\": 1500,\n    \"poster_url\": \"https://example.com/poster.jpg\",\n    \"backdrop_url\": \"https://example.com/backdrop.jpg\",\n    \"genres\": \"Drama;Comedy\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows",
+							"host": ["{{base_url}}"],
+							"path": ["shows"]
+						}
+					}
+				},
+				{
+					"name": "Create Show - Missing Required Fields (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.message).to.include('Required fields');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Show\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows",
+							"host": ["{{base_url}}"],
+							"path": ["shows"]
+						}
+					}
+				},
+				{
+					"name": "Create Show - Invalid Seasons Type (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error mentions seasons must be a number\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('Seasons must be a number');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Show\",\n    \"first_air_date\": \"2024-01-01\",\n    \"overview\": \"Test overview\",\n    \"seasons\": \"not a number\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows",
+							"host": ["{{base_url}}"],
+							"path": ["shows"]
+						}
+					}
+				},
+				{
+					"name": "Create Show - Invalid Rating Range (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error mentions rating bounds\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('between 0 and 10');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Show\",\n    \"first_air_date\": \"2024-01-01\",\n    \"overview\": \"Test overview\",\n    \"tmdb_rating\": 15.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows",
+							"host": ["{{base_url}}"],
+							"path": ["shows"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "PUT Update Show",
+			"item": [
+				{
+					"name": "Update Show - Valid Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message).to.include('updated successfully');",
+									"});",
+									"",
+									"pm.test(\"Response includes updated show\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('show');",
+									"});",
+									"",
+									"pm.test(\"Name was updated correctly\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.show.name).to.eql('Updated Show Name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Show Name\",\n    \"seasons\": 5,\n    \"tmdb_rating\": 9.2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows/{{test_show_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "{{test_show_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Show - Partial Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Only specified field was updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.show.status).to.eql('Returning Series');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"Returning Series\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows/{{test_show_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "{{test_show_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Show - Invalid ID (404)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions show not found\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.eql('Show not found');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Name\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows/999999",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "999999"]
+						}
+					}
+				},
+				{
+					"name": "Update Show - No Valid Fields (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error mentions no valid fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('No valid fields');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"invalid_field\": \"some value\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows/{{test_show_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "{{test_show_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Show - Invalid Rating (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error mentions rating must be between 0 and 10\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('between 0 and 10');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tmdb_rating\": 12.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows/{{test_show_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "{{test_show_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Show - Invalid Seasons Type (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error mentions seasons must be a number\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('Seasons must be a number');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"seasons\": \"not a number\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shows/{{test_show_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "{{test_show_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "DELETE Show",
+			"item": [
+				{
+					"name": "Delete Show - Valid ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message).to.include('deleted successfully');",
+									"});",
+									"",
+									"pm.test(\"Response includes deleted show data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('deletedShow');",
+									"    pm.expect(jsonData.deletedShow).to.have.property('id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows/{{created_show_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "{{created_show_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Show - Invalid ID (404)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Error message mentions show not found\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.eql('Show not found');",
+									"    pm.expect(jsonData.message).to.include('No show exists');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows/999999",
+							"host": ["{{base_url}}"],
+							"path": ["shows", "999999"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication Tests",
+			"item": [
+				{
+					"name": "Missing API Key (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error mentions unauthorized or missing API key\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error.toLowerCase()).to.include('unauthorized');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shows",
+							"host": ["{{base_url}}"],
+							"path": ["shows"]
+						}
+					}
+				},
+				{
+					"name": "Invalid API Key (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error mentions unauthorized or invalid API key\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error.toLowerCase()).to.include('unauthorized');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "invalid_key_12345",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shows",
+							"host": ["{{base_url}}"],
+							"path": ["shows"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "your_api_key_here",
+			"type": "string"
+		},
+		{
+			"key": "test_show_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "created_show_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_show_name",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
