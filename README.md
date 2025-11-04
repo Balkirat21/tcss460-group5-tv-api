@@ -4,9 +4,9 @@ This repository contains the Group 5 Web API project for the TCSS 460 Back-End D
 Our assigned dataset is **tv_last1years.csv**, containing television shows released within the past year.
 The Web API is built using **Node.js** and **Express**, connected to a **PostgreSQL database**, and provides secure, API key–restricted access to the dataset.
 
-**🌐 Hosted Data Web API URL (Render):** [https://tcss460-group5-tv-api.onrender.com](https://tcss460-group5-tv-api.onrender.com)
+**🌐 Hosted Data Web API URL (Render):** [https://helloworld-api-su2v.onrender.com](https://helloworld-api-su2v.onrender.com)
 
-**📚 API Documentation:** [https://tcss460-group5-tv-api.onrender.com/api-docs/](https://tcss460-group5-tv-api.onrender.com/api-docs/)
+**📚 API Documentation:** [https://helloworld-api-su2v.onrender.com/api-docs/](https://helloworld-api-su2v.onrender.com/api-docs/)
 
 ---
 
