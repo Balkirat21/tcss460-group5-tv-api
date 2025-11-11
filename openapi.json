@@ -1,686 +1,356 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-      "title": "TV Shows API",
-      "version": "1.0.0",
-      "description": "API for retrieving TV show information with filtering and pagination capabilities."
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Group 5's TV Show API",
+    "version": "1.0.0",
+    "description": "A comprehensive RESTful API for managing and discovering TV show information. Features include advanced search and filtering capabilities, sorting by ratings and popularity, full CRUD operations for shows, and organizing show details like actors, networks, genres, creators, and studios. All endpoints require API key authentication and support pagination for efficient data retrieval."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
     },
-    "servers": [
-      { 
-        "url": "http://localhost:3000",
-        "description": "Local development server"
-      },
-      { 
-        "url": "https://helloworld-api-su2v.onrender.com",
-        "description": "Production server"
+    {
+      "url": "https://helloworld-api-su2v.onrender.com",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "General",
+      "description": "General API endpoints"
+    },
+    {
+      "name": "TV Shows",
+      "description": "Operations related to TV shows"
+    },
+    {
+      "name": "Actors",
+      "description": "Operations related to actors"
+    },
+    {
+      "name": "Networks",
+      "description": "Operations related to networks"
+    },
+    {
+      "name": "Genres",
+      "description": "Operations related to genres"
+    },
+    {
+      "name": "Creators",
+      "description": "Operations related to show creators"
+    },
+    {
+      "name": "Studios",
+      "description": "Operations related to production studios"
+    },
+    {
+      "name": "Manage Show Details",
+      "description": "Add, remove, and update actors, creators, studios, networks, and genres for individual TV shows"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["General"],
+        "summary": "Test if API is working",
+        "description": "**What it does:** Returns a simple welcome message to verify the API is online and accessible.\n\n**When to use:** Call this first to test your connection and make sure the API is running before making other requests.\n\n**Note:** This is the only endpoint that doesn't require an API key.",
+        "responses": {
+          "200": {
+            "description": "Welcome message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Welcome to Group 5 TV API!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
-    ],
-    "paths": {
-      "/": {
-        "get": {
-          "summary": "API Health Check",
-          "description": "Returns a welcome message to verify the API is running. Use this endpoint to test connectivity and confirm the API is accessible. This endpoint does not require authentication and is publicly accessible.",
-          "responses": {
-            "200": {
-              "description": "Welcome message",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string",
-                        "example": "Welcome to Group 5 TV API!"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/v1/shows": {
-        "get": {
-          "summary": "Get TV shows with filtering and pagination",
-          "description": "Retrieve a paginated list of TV shows from the database. Supports optional filtering by name (case-insensitive partial match) and genre (case-insensitive partial match on semicolon-separated genres). Pagination defaults to 25 items per page but can be customized up to 200 items. Returns total record count, current page, total pages, and the results array. Requires API key authentication.",
-          "security": [
-            { "ApiKeyHeader": [] }
-          ],
-          "parameters": [
-            {
-              "in": "query",
-              "name": "page",
-              "schema": { "type": "integer", "minimum": 1, "default": 1 },
-              "description": "Page number (1-based)"
-            },
-            {
-              "in": "query",
-              "name": "pageSize",
-              "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
-              "description": "Number of items per page"
-            },
-            {
-              "in": "query",
-              "name": "name",
-              "schema": { "type": "string" },
-              "description": "Filter shows by name (case-insensitive substring match)"
-            },
-            {
-              "in": "query",
-              "name": "genre",
-              "schema": { "type": "string" },
-              "description": "Filter shows by genre (case-insensitive substring match)"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successfully retrieved TV shows",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "totalRecords": { "type": "integer", "example": 412 },
-                      "currentPage": { "type": "integer", "example": 1 },
-                      "totalPages": { "type": "integer", "example": 17 },
-                      "pageSize": { "type": "integer", "example": 25 },
-                      "results": {
-                        "type": "array",
-                        "items": { "$ref": "#/components/schemas/TVShow" }
-                      }
-                    },
-                    "required": ["totalRecords", "currentPage", "totalPages", "pageSize", "results"]
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized - Invalid or missing API key",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Unauthorized: Invalid or missing API key"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "post": {
-          "summary": "Add a new TV show",
-          "description": "Create a new TV show entry in the database. Required fields: name, first_air_date (YYYY-MM-DD format), and overview. The system automatically generates a unique ID for the new show. Optional fields (seasons, episodes, popularity, ratings, etc.) will be set to sensible defaults if not provided (e.g., seasons=1, episodes=1, popularity=0, tmdb_rating=0). Validates data types for numeric fields and ensures tmdb_rating is between 0-10. Returns the complete created show object with status 201 on success. Requires API key authentication.",
-          "security": [
-            { "ApiKeyHeader": [] }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": ["name", "first_air_date", "overview"],
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "description": "Name of the TV show",
-                      "example": "Breaking Bad"
-                    },
-                    "original_name": {
-                      "type": "string",
-                      "description": "Original name of the TV show",
-                      "example": "Breaking Bad"
-                    },
-                    "first_air_date": {
-                      "type": "string",
-                      "format": "date",
-                      "description": "First air date (YYYY-MM-DD)",
-                      "example": "2008-01-20"
-                    },
-                    "last_air_date": {
-                      "type": "string",
-                      "format": "date",
-                      "description": "Last air date (YYYY-MM-DD)",
-                      "example": "2013-09-29"
-                    },
-                    "seasons": {
-                      "type": "integer",
-                      "description": "Number of seasons",
-                      "example": 5
-                    },
-                    "episodes": {
-                      "type": "integer",
-                      "description": "Number of episodes",
-                      "example": 62
-                    },
-                    "status": {
-                      "type": "string",
-                      "description": "Show status",
-                      "example": "Ended"
-                    },
-                    "overview": {
-                      "type": "string",
-                      "description": "Show overview/description",
-                      "example": "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine."
-                    },
-                    "popularity": {
-                      "type": "number",
-                      "description": "Popularity score",
-                      "example": 250.5
-                    },
-                    "tmdb_rating": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 10,
-                      "description": "TMDb rating (0-10)",
-                      "example": 9.3
-                    },
-                    "vote_count": {
-                      "type": "integer",
-                      "description": "Number of votes",
-                      "example": 15000
-                    },
-                    "poster_url": {
-                      "type": "string",
-                      "description": "URL to poster image",
-                      "example": "https://example.com/poster.jpg"
-                    },
-                    "backdrop_url": {
-                      "type": "string",
-                      "description": "URL to backdrop image",
-                      "example": "https://example.com/backdrop.jpg"
-                    },
-                    "genres": {
-                      "type": "string",
-                      "description": "Semicolon-separated list of genres",
-                      "example": "Drama;Crime;Thriller"
-                    }
-                  }
-                }
-              }
-            }
+    },
+    "/api/shows": {
+      "get": {
+        "tags": ["TV Shows"],
+        "summary": "Browse all TV shows",
+        "description": "**What it does:** Gets a list of TV shows from the database. You can filter, sort, and paginate through thousands of shows.\n\n**When to use:** \n- Building a browse/search page for TV shows\n- Finding shows by name, genre, actor, or network\n- Getting the newest or highest-rated shows\n\n**How to use:**\n- **No filters:** Returns all shows (paginated)\n- **With filters:** Combine filters like `?genre=Action&year=2024&actor=Bryan` to narrow results\n- **Sorting:** Use `sortBy=tmdb_rating&order=desc` to get highest-rated shows first\n- **Pagination:** Use `page=1&pageSize=50` to control how many results per page (max 200)\n\n**Example:** `GET /api/shows?genre=Drama&sortBy=tmdb_rating&order=desc&page=1&pageSize=10` gets the top 10 highest-rated drama shows.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
           },
-          "responses": {
-            "201": {
-              "description": "TV show created successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string",
-                        "example": "TV show added successfully"
-                      },
-                      "show": {
-                        "$ref": "#/components/schemas/TVShow"
-                      }
-                    }
-                  }
-                }
-              }
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "schema": { "type": "string" },
+            "description": "Filter shows by name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "genre",
+            "schema": { "type": "string" },
+            "description": "Filter shows by genre (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "actor",
+            "schema": { "type": "string" },
+            "description": "Filter shows by actor name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "schema": { "type": "string" },
+            "description": "Filter shows by network name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "schema": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+            "description": "Filter shows by year (exact match on first air date year)"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "first_air_date", "tmdb_rating", "popularity", "vote_count"],
+              "default": "id"
             },
-            "400": {
-              "description": "Validation error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Validation error"
-                      },
-                      "message": {
-                        "type": "string",
-                        "example": "Required fields: name, first_air_date, and overview"
-                      }
-                    }
-                  }
-                }
-              }
+            "description": "Field to sort results by. Options: id, name, first_air_date, tmdb_rating, popularity, vote_count"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "asc"
             },
-            "401": {
-              "description": "Unauthorized - Invalid or missing API key",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Unauthorized: Invalid or missing API key"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "409": {
-              "description": "Conflict - Show already exists",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Conflict"
-                      },
-                      "message": {
-                        "type": "string",
-                        "example": "A show with this information already exists"
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "description": "Sort order: asc (ascending) or desc (descending)"
           }
-        }
-      },
-      "/api/v1/shows/showbyyear/{year}": {
-        "get": {
-          "summary": "Get TV shows by year with pagination",
-          "description": "Retrieve a paginated list of TV shows that first aired in a specific year. The endpoint extracts the year from the first_air_date field and matches it against the provided year parameter. Results are ordered by first_air_date and support pagination with configurable page size. Returns total record count, pagination metadata, and the shows array. Returns 404 if no shows aired in the specified year. Requires API key authentication.",
-          "security": [
-            { "ApiKeyHeader": [] }
-          ],
-          "parameters": [
-            {
-              "in": "path",
-              "name": "year",
-              "required": true,
-              "schema": { "type": "integer", "minimum": 1900, "maximum": 2100 },
-              "description": "The year to filter shows by (e.g., 2008)",
-              "example": 2008
-            },
-            {
-              "in": "query",
-              "name": "page",
-              "schema": { "type": "integer", "minimum": 1, "default": 1 },
-              "description": "Page number (1-based)"
-            },
-            {
-              "in": "query",
-              "name": "pageSize",
-              "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
-              "description": "Number of items per page"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successfully retrieved TV shows for the specified year",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "year": {
-                        "type": "string",
-                        "description": "The year that was queried",
-                        "example": "2008"
-                      },
-                      "totalRecords": {
-                        "type": "integer",
-                        "description": "Total number of shows that aired in this year",
-                        "example": 45
-                      },
-                      "currentPage": {
-                        "type": "integer",
-                        "example": 1
-                      },
-                      "totalPages": {
-                        "type": "integer",
-                        "example": 2
-                      },
-                      "pageSize": {
-                        "type": "integer",
-                        "example": 25
-                      },
-                      "shows": {
-                        "type": "array",
-                        "items": { "$ref": "#/components/schemas/TVShow" }
-                      }
-                    },
-                    "required": ["year", "totalRecords", "currentPage", "totalPages", "pageSize", "shows"]
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized - Invalid or missing API key",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Unauthorized: Invalid or missing API key"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No shows found for the specified year",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "No shows found for this year"
-                      },
-                      "year": {
-                        "type": "string",
-                        "example": "2008"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/v1/shows/{id}": {
-        "get": {
-          "summary": "Get a TV show by ID",
-          "description": "Retrieve detailed information for a single TV show using its unique identifier. The ID must be an integer value. Returns the complete show object if found, or a 404 error if no show exists with the specified ID. Useful for retrieving full details after searching or for displaying individual show pages. Requires API key authentication.",
-          "security": [
-            { "ApiKeyHeader": [] }
-          ],
-          "parameters": [
-            {
-              "in": "path",
-              "name": "id",
-              "required": true,
-              "schema": { "type": "string" },
-              "description": "The unique identifier of the TV show"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "TV show found",
-              "content": {
-                "application/json": {
-                  "schema": { "$ref": "#/components/schemas/TVShow" }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized - Invalid or missing API key",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Unauthorized: Invalid or missing API key"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "TV show not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": { "type": "string", "example": "Show not found" }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "put": {
-          "summary": "Update an existing TV show by ID",
-          "description": "Update one or more fields of an existing TV show in the database. Only whitelisted fields can be updated to prevent SQL injection. The endpoint validates data types for numeric fields and ensures tmdb_rating stays between 0-10. Returns the complete updated show object. At least one valid field must be provided. Returns 404 if the show doesn't exist. Requires API key authentication.",
-          "security": [
-            { "ApiKeyHeader": [] }
-          ],
-          "parameters": [
-            {
-              "in": "path",
-              "name": "id",
-              "required": true,
-              "schema": { "type": "integer" },
-              "description": "The unique identifier of the TV show to update"
-            }
-          ],
-          "requestBody": {
-            "required": true,
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved TV shows",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "name": {
-                      "type": "string",
-                      "example": "Breaking Bad"
-                    },
-                    "original_name": {
-                      "type": "string",
-                      "example": "Breaking Bad"
-                    },
-                    "first_air_date": {
-                      "type": "string",
-                      "format": "date",
-                      "example": "2008-01-20"
-                    },
-                    "last_air_date": {
-                      "type": "string",
-                      "format": "date",
-                      "example": "2013-09-29"
-                    },
-                    "seasons": {
-                      "type": "integer",
-                      "example": 5
-                    },
-                    "episodes": {
-                      "type": "integer",
-                      "example": 62
-                    },
-                    "status": {
-                      "type": "string",
-                      "example": "Ended"
-                    },
-                    "overview": {
-                      "type": "string",
-                      "example": "Updated overview text"
-                    },
-                    "popularity": {
-                      "type": "number",
-                      "example": 250.5
-                    },
-                    "tmdb_rating": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 10,
-                      "example": 9.5
-                    },
-                    "vote_count": {
-                      "type": "integer",
-                      "example": 20000
-                    },
-                    "poster_url": {
-                      "type": "string",
-                      "example": "https://example.com/new-poster.jpg"
-                    },
-                    "backdrop_url": {
-                      "type": "string",
-                      "example": "https://example.com/new-backdrop.jpg"
-                    },
-                    "genres": {
-                      "type": "string",
-                      "example": "Drama;Crime;Thriller"
+                    "totalRecords": { "type": "integer", "example": 412 },
+                    "currentPage": { "type": "integer", "example": 1 },
+                    "totalPages": { "type": "integer", "example": 17 },
+                    "pageSize": { "type": "integer", "example": 25 },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/TVShow" }
                     }
                   },
-                  "description": "Provide only the fields you want to update. All fields are optional, but at least one must be provided."
+                  "required": ["totalRecords", "currentPage", "totalPages", "pageSize", "results"]
                 }
               }
             }
           },
-          "responses": {
-            "200": {
-              "description": "TV show updated successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string",
-                        "example": "TV show updated successfully"
-                      },
-                      "show": {
-                        "$ref": "#/components/schemas/TVShow"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad request - Invalid fields or validation error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "No valid fields to update"
-                      },
-                      "message": {
-                        "type": "string",
-                        "example": "Allowed fields: name, original_name, first_air_date, ..."
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized - Invalid or missing API key",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Unauthorized: Invalid or missing API key"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "TV show not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Show not found"
-                      },
-                      "message": {
-                        "type": "string",
-                        "example": "No show exists with ID 12345"
-                      }
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized: Invalid or missing API key"
                     }
                   }
                 }
               }
             }
           }
-        },
-        "delete": {
-          "summary": "Delete a TV show by ID",
-          "description": "Permanently remove a TV show from the database by its unique identifier. This action cannot be undone. The endpoint first verifies the show exists before attempting deletion. Returns the deleted show data in the response for confirmation purposes. Returns 404 if no show exists with the specified ID. Use this endpoint carefully as data cannot be recovered after deletion. Requires API key authentication.",
-          "security": [
-            { "ApiKeyHeader": [] }
-          ],
-          "parameters": [
-            {
-              "in": "path",
-              "name": "id",
-              "required": true,
-              "schema": { "type": "integer" },
-              "description": "The unique identifier of the TV show to delete"
+        }
+      },
+      "post": {
+        "tags": ["TV Shows"],
+        "summary": "Add a new TV show",
+        "description": "**What it does:** Creates a brand new TV show in the database.\n\n**When to use:**\n- Adding a show that doesn't exist yet\n- Importing shows from another source\n- Building an admin panel for content management\n\n**Required fields:**\n- `name` - Show title\n- `first_air_date` - When it first aired (format: YYYY-MM-DD)\n- `overview` - Description/plot summary\n\n**Optional fields:**\n- `seasons`, `episodes`, `tmdb_rating`, `popularity`, `poster_url`, etc.\n- `actors`, `genres`, `networks`, `creators`, `studios` - Send arrays to link existing entities\n\n**What happens:** The API generates a unique ID and returns the complete show with all fields filled in (defaults used for missing optional fields).\n\n**Example:** Send `{\"name\": \"Breaking Bad\", \"first_air_date\": \"2008-01-20\", \"overview\": \"A chemistry teacher...\"}` to create the show.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "first_air_date", "overview"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the TV show",
+                    "example": "Breaking Bad"
+                  },
+                  "original_name": {
+                    "type": "string",
+                    "description": "Original name of the TV show",
+                    "example": "Breaking Bad"
+                  },
+                  "first_air_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "First air date (YYYY-MM-DD)",
+                    "example": "2008-01-20"
+                  },
+                  "last_air_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Last air date (YYYY-MM-DD)",
+                    "example": "2013-09-29"
+                  },
+                  "seasons": {
+                    "type": "integer",
+                    "description": "Number of seasons",
+                    "example": 5
+                  },
+                  "episodes": {
+                    "type": "integer",
+                    "description": "Number of episodes",
+                    "example": 62
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Show status",
+                    "example": "Ended"
+                  },
+                  "overview": {
+                    "type": "string",
+                    "description": "Show overview/description",
+                    "example": "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine."
+                  },
+                  "popularity": {
+                    "type": "number",
+                    "description": "Popularity score",
+                    "example": 250.5
+                  },
+                  "tmdb_rating": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "TMDb rating (0-10)",
+                    "example": 9.3
+                  },
+                  "vote_count": {
+                    "type": "integer",
+                    "description": "Number of votes",
+                    "example": 15000
+                  },
+                  "poster_url": {
+                    "type": "string",
+                    "description": "URL to poster image",
+                    "example": "https://example.com/poster.jpg"
+                  },
+                  "backdrop_url": {
+                    "type": "string",
+                    "description": "URL to backdrop image",
+                    "example": "https://example.com/backdrop.jpg"
+                  },
+                  "genres": {
+                    "type": "string",
+                    "description": "Semicolon-separated list of genres",
+                    "example": "Drama;Crime;Thriller"
+                  }
+                }
+              }
             }
-          ],
-          "responses": {
-            "200": {
-              "description": "TV show deleted successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string",
-                        "example": "TV show deleted successfully"
-                      },
-                      "deletedShow": {
-                        "$ref": "#/components/schemas/TVShow"
-                      }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "TV show created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "TV show added successfully"
+                    },
+                    "show": {
+                      "$ref": "#/components/schemas/TVShow"
                     }
                   }
                 }
               }
-            },
-            "401": {
-              "description": "Unauthorized - Invalid or missing API key",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Unauthorized: Invalid or missing API key"
-                      }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Validation error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Required fields: name, first_air_date, and overview"
                     }
                   }
                 }
               }
-            },
-            "404": {
-              "description": "TV show not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string",
-                        "example": "Show not found"
-                      },
-                      "message": {
-                        "type": "string",
-                        "example": "No show exists with ID 12345"
-                      }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized: Invalid or missing API key"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Show already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Conflict"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "A show with this information already exists"
                     }
                   }
                 }
@@ -690,39 +360,3008 @@
         }
       }
     },
-    "components": {
-      "schemas": {
-        "TVShow": {
-          "type": "object",
-          "description": "A TV show object containing show information",
-          "properties": {
-            "ID": {
-              "type": "string",
-              "description": "Unique identifier for the show",
-              "example": "12345"
-            },
-            "Name": {
-              "type": "string",
-              "description": "Name of the TV show",
-              "example": "Breaking Bad"
-            },
-            "Genres": {
-              "type": "string",
-              "description": "Comma-separated list of genres",
-              "example": "Drama, Crime"
+    "/api/shows/{id}": {
+      "get": {
+        "tags": ["TV Shows"],
+        "summary": "Get a specific show by ID",
+        "description": "**What it does:** Gets complete details for ONE specific TV show.\n\n**When to use:**\n- Displaying a detail page for a show (after user clicks on it)\n- Getting full information including cast, genres, networks\n- Checking if a show exists in the database\n\n**What you get:**\n- All show fields (name, rating, overview, dates, etc.)\n- `actors_detailed` - Array of actors with character names and billing order\n- `genres_detailed` - Array of genre objects\n- `networks_detailed` - Array of networks that aired the show\n- `creators`, `studios` - Arrays of related entities\n\n**Example:** `GET /api/shows/12345` returns everything about show #12345, or 404 if it doesn't exist.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The unique identifier of the TV show"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "TV show found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TVShow" }
+              }
             }
           },
-          "additionalProperties": true,
-          "required": ["ID", "Name"]
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized: Invalid or missing API key"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TV show not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Show not found" }
+                  }
+                }
+              }
+            }
+          }
         }
       },
-      "securitySchemes": {
-        "ApiKeyHeader": {
-          "type": "apiKey",
-          "in": "header",
-          "name": "x-api-key",
-          "description": "API key passed in the x-api-key header"
+      "patch": {
+        "tags": ["TV Shows"],
+        "summary": "Update a show's information",
+        "description": "**What it does:** Updates one or more fields of an existing show. Only changes the fields you specify - everything else stays the same.\n\n**When to use:**\n- Correcting show information (fixing typos, updating ratings)\n- Adding missing data (poster URLs, episode counts)\n- Bulk updating genres/networks/actors for a show\n\n**What you can update:**\n- Basic info: `name`, `overview`, `status`, `seasons`, `episodes`\n- Ratings: `tmdb_rating` (must be 0-10), `vote_count`, `popularity`\n- Dates: `first_air_date`, `last_air_date`\n- Images: `poster_url`, `backdrop_url`\n- **Bulk replace:** `actors`, `genres`, `networks`, `creators`, `studios` (sends arrays to replace ALL)\n\n**Note:** To add/remove single items, use the \"Manage Show Details\" endpoints instead.\n\n**Example:** `PATCH /api/shows/123 {\"tmdb_rating\": 8.5, \"status\": \"Ended\"}` updates only rating and status.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show to update"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Breaking Bad"
+                  },
+                  "original_name": {
+                    "type": "string",
+                    "example": "Breaking Bad"
+                  },
+                  "first_air_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2008-01-20"
+                  },
+                  "last_air_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2013-09-29"
+                  },
+                  "seasons": {
+                    "type": "integer",
+                    "example": 5
+                  },
+                  "episodes": {
+                    "type": "integer",
+                    "example": 62
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "Ended"
+                  },
+                  "overview": {
+                    "type": "string",
+                    "example": "Updated overview text"
+                  },
+                  "popularity": {
+                    "type": "number",
+                    "example": 250.5
+                  },
+                  "tmdb_rating": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "example": 9.5
+                  },
+                  "vote_count": {
+                    "type": "integer",
+                    "example": 20000
+                  },
+                  "poster_url": {
+                    "type": "string",
+                    "example": "https://example.com/new-poster.jpg"
+                  },
+                  "backdrop_url": {
+                    "type": "string",
+                    "example": "https://example.com/new-backdrop.jpg"
+                  },
+                  "genres": {
+                    "type": "array",
+                    "description": "Array of genre names. Replaces all existing genres.",
+                    "items": { "type": "string" },
+                    "example": ["Drama", "Crime", "Thriller"]
+                  },
+                  "networks": {
+                    "type": "array",
+                    "description": "Array of network names. Replaces all existing networks.",
+                    "items": { "type": "string" },
+                    "example": ["AMC", "Netflix"]
+                  },
+                  "actors": {
+                    "type": "array",
+                    "description": "Array of actor objects. Replaces all existing actors.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" },
+                        "character_name": { "type": "string" },
+                        "profile_url": { "type": "string" }
+                      },
+                      "required": ["name"]
+                    },
+                    "example": [{"name": "Bryan Cranston", "character_name": "Walter White"}]
+                  },
+                  "creators": {
+                    "type": "array",
+                    "description": "Array of creator names. Replaces all existing creators.",
+                    "items": { "type": "string" },
+                    "example": ["Vince Gilligan"]
+                  },
+                  "studios": {
+                    "type": "array",
+                    "description": "Array of studio names. Replaces all existing studios.",
+                    "items": { "type": "string" },
+                    "example": ["Sony Pictures Television"]
+                  }
+                },
+                "description": "Provide only the fields you want to update. All fields are optional, but at least one must be provided."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TV show updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "TV show updated successfully"
+                    },
+                    "show": {
+                      "$ref": "#/components/schemas/TVShow"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid fields or validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "No valid fields to update"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Allowed fields: name, original_name, first_air_date, ..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized: Invalid or missing API key"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TV show not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Show not found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "No show exists with ID 12345"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["TV Shows"],
+        "summary": "Delete a show permanently",
+        "description": "**What it does:** Permanently removes a TV show from the database. ⚠️ This cannot be undone!\n\n**When to use:**\n- Removing duplicate entries\n- Cleaning up test data\n- Admin panel deletion features\n\n**What happens:**\n- The show is permanently deleted\n- All relationships are automatically removed (actors, genres, networks, etc.)\n- Returns the deleted show data for confirmation\n- Returns 404 if show doesn't exist\n\n**⚠️ Warning:** This is permanent! The show and all its relationships will be gone forever.\n\n**Example:** `DELETE /api/shows/123` removes show #123 completely.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "TV show deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "TV show deleted successfully"
+                    },
+                    "deletedShow": {
+                      "$ref": "#/components/schemas/TVShow"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized: Invalid or missing API key"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TV show not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Show not found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "No show exists with ID 12345"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shows/{id}/actors": {
+      "post": {
+        "tags": ["Manage Show Details"],
+        "summary": "Add an actor to a show",
+        "description": "**What it does:** Adds ONE actor to a show's cast without changing existing actors.\n\n**When to use:** Adding a new cast member to a show\n\n**How it works:**\n- If the actor doesn't exist in the database, they're automatically created\n- Automatically assigns next available display order (position in cast list: 1 = lead, 2 = second lead, etc.)\n- Won't add duplicates - returns error if actor already in show\n\n**Required:** Actor name\n**Optional:** `character_name` (role they play), `profile_url`\n\n**Example:** `POST /api/shows/123/actors {\"name\": \"Bryan Cranston\", \"character_name\": \"Walter White\"}` adds Bryan to show #123.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "Bryan Cranston" },
+                  "character_name": { "type": "string", "example": "Walter White" },
+                  "profile_url": { "type": "string", "example": "https://example.com/bryan.jpg" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Actor added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Actor added to show successfully" },
+                    "actor": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" },
+                        "character_name": { "type": "string" },
+                        "display_order": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Show not found" },
+          "409": { "description": "Actor already in this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/actors/{actorId}": {
+      "delete": {
+        "tags": ["Manage Show Details"],
+        "summary": "Remove an actor from a show",
+        "description": "**What it does:** Removes ONE actor from a show's cast. Other actors remain unchanged.\n\n**When to use:** Removing a cast member from a specific show (doesn't delete the actor from database)\n\n**What happens:** Only removes the connection between this actor and this show. The actor still exists and can appear in other shows.\n\n**Example:** `DELETE /api/shows/123/actors/456` removes actor #456 from show #123's cast list.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          },
+          {
+            "in": "path",
+            "name": "actorId",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the actor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Actor removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Actor removed from show successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Actor not in this show" }
+        }
+      },
+      "patch": {
+        "tags": ["Manage Show Details"],
+        "summary": "Update actor's character or cast order",
+        "description": "**What it does:** Updates the character name or display order (cast position: 1 = lead, 2 = second lead, etc.) for an actor in a show.\n\n**When to use:**\n- Fixing a character name typo\n- Reordering the cast list (moving someone up/down)\n\n**Example:** `PATCH /api/shows/123/actors/456 {\"display_order\": 1}` moves actor to top of cast list.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          },
+          {
+            "in": "path",
+            "name": "actorId",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the actor"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "character_name": { "type": "string", "example": "Walter White" },
+                  "display_order": { "type": "integer", "example": 1 }
+                },
+                "description": "At least one field must be provided"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Relationship updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Actor relationship updated successfully" },
+                    "relationship": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Actor not in this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/networks": {
+      "post": {
+        "tags": ["Manage Show Details"],
+        "summary": "Add a network to a show",
+        "description": "**What it does:** Links a network (broadcaster) to a show.\n\n**When to use:** Specifying which network(s) aired/stream a show (e.g., Netflix, HBO, ABC)\n\n**How it works:** Auto-creates the network if it doesn't exist. Won't add duplicates.\n\n**Example:** `POST /api/shows/123/networks {\"name\": \"HBO\"}` marks HBO as a broadcaster of show #123.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "AMC" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Network added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Network added to show successfully" },
+                    "network": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Show not found" },
+          "409": { "description": "Network already linked to this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/networks/{networkId}": {
+      "delete": {
+        "tags": ["Manage Show Details"],
+        "summary": "Remove a network from a show",
+        "description": "**What it does:** Removes the connection between a network and a show.\n\n**When to use:** Correcting broadcast information\n\n**Example:** `DELETE /api/shows/123/networks/5` removes network #5 from show #123.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          },
+          {
+            "in": "path",
+            "name": "networkId",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the network"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Network removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Network removed from show successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Network not linked to this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/genres": {
+      "post": {
+        "tags": ["Manage Show Details"],
+        "summary": "Add a genre to a show",
+        "description": "**What it does:** Tags a show with a genre category.\n\n**When to use:** Categorizing shows (Action, Drama, Comedy, Sci-Fi, etc.)\n\n**How it works:** Auto-creates genre if it doesn't exist. Won't add duplicates.\n\n**Example:** `POST /api/shows/123/genres {\"name\": \"Drama\"}` tags show #123 as Drama.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "Drama" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Genre added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Genre added to show successfully" },
+                    "genre": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Show not found" },
+          "409": { "description": "Genre already linked to this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/genres/{genreId}": {
+      "delete": {
+        "tags": ["Manage Show Details"],
+        "summary": "Remove a genre from a show",
+        "description": "**What it does:** Removes a genre tag from a show.\n\n**Example:** `DELETE /api/shows/123/genres/5` removes genre #5 from show #123.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          },
+          {
+            "in": "path",
+            "name": "genreId",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the genre"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Genre removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Genre removed from show successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Genre not linked to this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/creators": {
+      "post": {
+        "tags": ["Manage Show Details"],
+        "summary": "Add a creator to a show",
+        "description": "Add a single creator to a show. Creates the creator if it doesn't exist. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "Vince Gilligan" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creator added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Creator added to show successfully" },
+                    "creator": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Show not found" },
+          "409": { "description": "Creator already linked to this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/creators/{creatorId}": {
+      "delete": {
+        "tags": ["Manage Show Details"],
+        "summary": "Remove a creator from a show",
+        "description": "Remove a specific creator from a show. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          },
+          {
+            "in": "path",
+            "name": "creatorId",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the creator"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Creator removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Creator removed from show successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Creator not linked to this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/studios": {
+      "post": {
+        "tags": ["Manage Show Details"],
+        "summary": "Add a studio to a show",
+        "description": "Add a single studio to a show. Creates the studio if it doesn't exist. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "Sony Pictures Television" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Studio added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Studio added to show successfully" },
+                    "studio": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Show not found" },
+          "409": { "description": "Studio already linked to this show" }
+        }
+      }
+    },
+    "/api/shows/{id}/studios/{studioId}": {
+      "delete": {
+        "tags": ["Manage Show Details"],
+        "summary": "Remove a studio from a show",
+        "description": "Remove a specific studio from a show. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the TV show"
+          },
+          {
+            "in": "path",
+            "name": "studioId",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the studio"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Studio removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Studio removed from show successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "description": "Studio not linked to this show" }
+        }
+      }
+    },
+    "/api/actors": {
+      "get": {
+        "tags": ["Actors"],
+        "summary": "Browse all actors",
+        "description": "**What it does:** Gets a list of all actors in the database.\n\n**When to use:**\n- Building an actor search/browse page\n- Finding an actor by name\n- Creating dropdown lists of actors\n\n**How to use:**\n- **Search:** Add `?search=Bryan` to find actors with \"Bryan\" in their name\n- **Pagination:** Use `page` and `pageSize` parameters\n\n**Example:** `GET /api/actors?search=Cranston&page=1&pageSize=10` finds actors named Cranston.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": { "type": "string" },
+            "description": "Search actors by name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": { "type": "string", "enum": ["id", "name"], "default": "name" },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "asc" },
+            "description": "Sort order (ascending or descending)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved actors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Actor" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "post": {
+        "tags": ["Actors"],
+        "summary": "Create a new actor",
+        "description": "Add a new actor to the database. Actor name is required and must be unique. Returns 409 if an actor with the same name already exists. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the actor",
+                    "example": "Bryan Cranston"
+                  },
+                  "profile_url": {
+                    "type": "string",
+                    "description": "URL to actor profile image",
+                    "example": "https://example.com/bryan-cranston.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Actor created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Actor created successfully" },
+                    "actor": { "$ref": "#/components/schemas/Actor" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Actor name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "409": {
+            "description": "Conflict - Actor already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "An actor with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/actors/{id}": {
+      "get": {
+        "tags": ["Actors"],
+        "summary": "Get an actor by ID",
+        "description": "Retrieve detailed information for a single actor using their unique identifier. Returns 404 if no actor exists with the specified ID. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the actor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Actor found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Actor" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Actor not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Actor not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Actors"],
+        "summary": "Update an actor by ID",
+        "description": "Partially update actor information. Only provided fields will be updated; other fields remain unchanged. At least one field must be provided. Returns 404 if actor doesn't exist. Returns 409 if updating name to an existing actor name. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the actor"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the actor",
+                    "example": "Bryan Cranston"
+                  },
+                  "profile_url": {
+                    "type": "string",
+                    "description": "URL to actor profile image",
+                    "example": "https://example.com/bryan-cranston.jpg"
+                  }
+                },
+                "description": "At least one field must be provided"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Actor updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Actor updated successfully" },
+                    "actor": { "$ref": "#/components/schemas/Actor" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "At least one field (name or profile_url) must be provided" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Actor not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Actor not found" }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Actor name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "An actor with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/actors/{id}/shows": {
+      "get": {
+        "tags": ["Actors"],
+        "summary": "Get all shows starring an actor",
+        "description": "**What it does:** Gets all TV shows that feature a specific actor (their filmography).\n\n**When to use:**\n- Building an actor profile page showing their TV work\n- Finding what shows an actor appeared in\n- Filtering an actor's work by genre or year\n\n**What you get:** List of shows with character names they played and their cast position (1 = lead role, 2 = second lead, etc.).\n\n**Bonus features:**\n- **Sort:** `sortBy=tmdb_rating&order=desc` to get their highest-rated shows\n- **Filter:** `?genre=Drama&year=2020&minRating=8` to narrow results\n\n**Example:** `GET /api/actors/123/shows?sortBy=first_air_date&order=desc` gets actor #123's shows, newest first.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the actor"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "first_air_date", "tmdb_rating", "popularity", "vote_count"],
+              "default": "first_air_date"
+            },
+            "description": "Field to sort results by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order (ascending or descending)"
+          },
+          {
+            "in": "query",
+            "name": "genre",
+            "schema": { "type": "string" },
+            "description": "Filter by genre name (case-insensitive partial match)"
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "schema": { "type": "string" },
+            "description": "Filter by network name (case-insensitive partial match)"
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "schema": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+            "description": "Filter by year of first air date"
+          },
+          {
+            "in": "query",
+            "name": "minRating",
+            "schema": { "type": "number", "minimum": 0, "maximum": 10 },
+            "description": "Filter by minimum TMDB rating"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved shows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "actor": { "$ref": "#/components/schemas/Actor" },
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "shows": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          { "$ref": "#/components/schemas/TVShow" },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "character_name": { "type": "string" },
+                              "display_order": { "type": "integer" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Actor not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Actor not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/networks": {
+      "get": {
+        "tags": ["Networks"],
+        "summary": "Browse all networks",
+        "description": "**What it does:** Gets a list of all TV networks/broadcasters (HBO, Netflix, ABC, etc.).\n\n**When to use:**\n- Building a filter dropdown for networks\n- Searching for a specific broadcaster\n- Showing all available networks\n\n**Example:** `GET /api/networks?search=HBO` finds all networks with \"HBO\" in the name.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": { "type": "string" },
+            "description": "Search networks by name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": { "type": "string", "enum": ["id", "name"], "default": "name" },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "asc" },
+            "description": "Sort order (ascending or descending)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved networks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Network" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "post": {
+        "tags": ["Networks"],
+        "summary": "Create a new network",
+        "description": "Add a new network to the database. Network name is required and must be unique. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the network",
+                    "example": "HBO"
+                  },
+                  "logo_url": {
+                    "type": "string",
+                    "description": "URL to network logo",
+                    "example": "https://example.com/hbo-logo.png"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Country of origin",
+                    "example": "United States"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Network created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Network created successfully" },
+                    "network": { "$ref": "#/components/schemas/Network" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Network name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "409": {
+            "description": "Conflict - Network already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A network with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/networks/{id}": {
+      "get": {
+        "tags": ["Networks"],
+        "summary": "Get a network by ID",
+        "description": "Retrieve detailed information for a single network using its unique identifier. Returns 404 if no network exists with the specified ID. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the network"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Network found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Network" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Network not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Network not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Networks"],
+        "summary": "Update a network by ID",
+        "description": "Partially update network information. Only provided fields will be updated; other fields remain unchanged. At least one field must be provided. Returns 404 if network doesn't exist. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the network"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the network",
+                    "example": "HBO"
+                  },
+                  "logo_url": {
+                    "type": "string",
+                    "description": "URL to network logo",
+                    "example": "https://example.com/hbo-logo.png"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Country of origin",
+                    "example": "United States"
+                  }
+                },
+                "description": "At least one field must be provided"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Network updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Network updated successfully" },
+                    "network": { "$ref": "#/components/schemas/Network" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "At least one field must be provided" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Network not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Network not found" }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Network name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A network with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/networks/{id}/shows": {
+      "get": {
+        "tags": ["Networks"],
+        "summary": "Get all shows for a specific network",
+        "description": "Retrieve a paginated list of TV shows broadcast on the specified network. Supports flexible sorting by various fields and filtering by genre, actor, year, and minimum rating. Results default to sorting by first air date (most recent first). Returns 404 if network doesn't exist. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the network"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "first_air_date", "tmdb_rating", "popularity", "vote_count"],
+              "default": "first_air_date"
+            },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order (ascending or descending)"
+          },
+          {
+            "in": "query",
+            "name": "genre",
+            "schema": { "type": "string" },
+            "description": "Filter by genre name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "actor",
+            "schema": { "type": "string" },
+            "description": "Filter by actor name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "schema": { "type": "integer" },
+            "description": "Filter by first air date year (exact match)"
+          },
+          {
+            "in": "query",
+            "name": "minRating",
+            "schema": { "type": "number", "minimum": 0, "maximum": 10 },
+            "description": "Filter by minimum TMDB rating (inclusive)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved shows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "network": { "$ref": "#/components/schemas/Network" },
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "shows": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/TVShow" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Network not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Network not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/genres": {
+      "get": {
+        "tags": ["Genres"],
+        "summary": "Get all genres",
+        "description": "**What it does:** Gets the complete list of all TV show genres (only 18 total).\n\n**When to use:**\n- Building a genre filter/dropdown\n- Displaying available categories\n- Genre-based navigation\n\n**Note:** Returns ALL genres at once (no pagination needed since there are only 18).\n\n**Example:** `GET /api/genres` returns Action, Comedy, Drama, Sci-Fi, etc.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": { "type": "string", "enum": ["id", "name"], "default": "name" },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "asc" },
+            "description": "Sort order (ascending or descending)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved genres",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalRecords": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Genre" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "post": {
+        "tags": ["Genres"],
+        "summary": "Create a new genre",
+        "description": "Add a new genre to the database. Genre name is required and must be unique. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the genre",
+                    "example": "Science Fiction"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Genre created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Genre created successfully" },
+                    "genre": { "$ref": "#/components/schemas/Genre" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Genre name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "409": {
+            "description": "Conflict - Genre already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A genre with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/genres/{id}": {
+      "get": {
+        "tags": ["Genres"],
+        "summary": "Get a genre by ID",
+        "description": "Retrieve detailed information for a single genre using its unique identifier. Returns 404 if no genre exists with the specified ID. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the genre"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Genre found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Genre" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Genre not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Genre not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Genres"],
+        "summary": "Update a genre by ID",
+        "description": "Update genre name. Returns 404 if genre doesn't exist. Returns 409 if updating to an existing genre name. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the genre"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the genre",
+                    "example": "Science Fiction"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Genre updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Genre updated successfully" },
+                    "genre": { "$ref": "#/components/schemas/Genre" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Genre name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Genre not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Genre not found" }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Genre name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A genre with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/genres/{id}/shows": {
+      "get": {
+        "tags": ["Genres"],
+        "summary": "Get all shows for a specific genre",
+        "description": "Retrieve a paginated list of TV shows in the specified genre. Results are sorted by TMDB rating and popularity (highest first). Returns 404 if genre doesn't exist. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the genre"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved shows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "genre": { "$ref": "#/components/schemas/Genre" },
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "shows": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/TVShow" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Genre not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Genre not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/creators": {
+      "get": {
+        "tags": ["Creators"],
+        "summary": "Get all creators",
+        "description": "Retrieve a paginated list of all show creators in the database. Supports optional search filtering by name using case-insensitive substring matching. Results are sorted alphabetically by name. Pagination defaults to 25 items per page. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": { "type": "string" },
+            "description": "Search creators by name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": { "type": "string", "enum": ["id", "name"], "default": "name" },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "asc" },
+            "description": "Sort order (ascending or descending)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved creators",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Creator" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "post": {
+        "tags": ["Creators"],
+        "summary": "Create a new creator",
+        "description": "Add a new creator to the database. Creator name is required and must be unique. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the creator",
+                    "example": "Vince Gilligan"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creator created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Creator created successfully" },
+                    "creator": { "$ref": "#/components/schemas/Creator" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Creator name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "409": {
+            "description": "Conflict - Creator already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A creator with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/creators/{id}": {
+      "get": {
+        "tags": ["Creators"],
+        "summary": "Get a creator by ID",
+        "description": "Retrieve detailed information for a single creator using their unique identifier. Returns 404 if no creator exists with the specified ID. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the creator"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Creator found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Creator" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Creator not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Creator not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Creators"],
+        "summary": "Update a creator by ID",
+        "description": "Update creator name. Returns 404 if creator doesn't exist. Returns 409 if updating to an existing creator name. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the creator"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the creator",
+                    "example": "Vince Gilligan"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Creator updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Creator updated successfully" },
+                    "creator": { "$ref": "#/components/schemas/Creator" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Creator name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Creator not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Creator not found" }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Creator name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A creator with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/creators/{id}/shows": {
+      "get": {
+        "tags": ["Creators"],
+        "summary": "Get all shows for a specific creator",
+        "description": "Retrieve a paginated list of TV shows created by the specified creator. Supports flexible sorting by various fields and filtering by genre, network, actor, year, and minimum rating. Results default to sorting by first air date (most recent first). Returns 404 if creator doesn't exist. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the creator"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "first_air_date", "tmdb_rating", "popularity", "vote_count"],
+              "default": "first_air_date"
+            },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order (ascending or descending)"
+          },
+          {
+            "in": "query",
+            "name": "genre",
+            "schema": { "type": "string" },
+            "description": "Filter by genre name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "schema": { "type": "string" },
+            "description": "Filter by network name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "actor",
+            "schema": { "type": "string" },
+            "description": "Filter by actor name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "schema": { "type": "integer" },
+            "description": "Filter by first air date year (exact match)"
+          },
+          {
+            "in": "query",
+            "name": "minRating",
+            "schema": { "type": "number", "minimum": 0, "maximum": 10 },
+            "description": "Filter by minimum TMDB rating (inclusive)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved shows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "creator": { "$ref": "#/components/schemas/Creator" },
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "shows": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/TVShow" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Creator not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Creator not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/studios": {
+      "get": {
+        "tags": ["Studios"],
+        "summary": "Get all studios",
+        "description": "Retrieve a paginated list of all production studios in the database. Supports optional search filtering by name using case-insensitive substring matching. Results are sorted alphabetically by name. Pagination defaults to 25 items per page. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": { "type": "string" },
+            "description": "Search studios by name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": { "type": "string", "enum": ["id", "name"], "default": "name" },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "asc" },
+            "description": "Sort order (ascending or descending)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved studios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Studio" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "post": {
+        "tags": ["Studios"],
+        "summary": "Create a new studio",
+        "description": "Add a new studio to the database. Studio name is required and must be unique. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the studio",
+                    "example": "Sony Pictures Television"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Studio created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Studio created successfully" },
+                    "studio": { "$ref": "#/components/schemas/Studio" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Studio name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "409": {
+            "description": "Conflict - Studio already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A studio with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/studios/{id}": {
+      "get": {
+        "tags": ["Studios"],
+        "summary": "Get a studio by ID",
+        "description": "Retrieve detailed information for a single studio using its unique identifier. Returns 404 if no studio exists with the specified ID. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the studio"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Studio found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Studio" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Studio not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Studio not found" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Studios"],
+        "summary": "Update a studio by ID",
+        "description": "Update studio name. Returns 404 if studio doesn't exist. Returns 409 if updating to an existing studio name. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the studio"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the studio",
+                    "example": "Sony Pictures Television"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Studio updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Studio updated successfully" },
+                    "studio": { "$ref": "#/components/schemas/Studio" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Validation error" },
+                    "message": { "type": "string", "example": "Studio name is required" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Studio not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Studio not found" }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Studio name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Conflict" },
+                    "message": { "type": "string", "example": "A studio with this name already exists" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/studios/{id}/shows": {
+      "get": {
+        "tags": ["Studios"],
+        "summary": "Get all shows for a specific studio",
+        "description": "Retrieve a paginated list of TV shows produced by the specified studio. Supports flexible sorting by various fields and filtering by genre, network, actor, year, and minimum rating. Results default to sorting by first air date (most recent first). Returns 404 if studio doesn't exist. Requires API key authentication.",
+        "security": [
+          { "ApiKeyHeader": [] }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "The unique identifier of the studio"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "Page number (1-based)"
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 25 },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "first_air_date", "tmdb_rating", "popularity", "vote_count"],
+              "default": "first_air_date"
+            },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order (ascending or descending)"
+          },
+          {
+            "in": "query",
+            "name": "genre",
+            "schema": { "type": "string" },
+            "description": "Filter by genre name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "schema": { "type": "string" },
+            "description": "Filter by network name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "actor",
+            "schema": { "type": "string" },
+            "description": "Filter by actor name (case-insensitive substring match)"
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "schema": { "type": "integer" },
+            "description": "Filter by first air date year (exact match)"
+          },
+          {
+            "in": "query",
+            "name": "minRating",
+            "schema": { "type": "number", "minimum": 0, "maximum": 10 },
+            "description": "Filter by minimum TMDB rating (inclusive)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved shows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "studio": { "$ref": "#/components/schemas/Studio" },
+                    "totalRecords": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "shows": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/TVShow" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": {
+            "description": "Studio not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Studio not found" }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
+  },
+  "components": {
+    "schemas": {
+      "TVShow": {
+        "type": "object",
+        "description": "A TV show object containing show information",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the show",
+            "example": 12345
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the TV show",
+            "example": "Breaking Bad"
+          },
+          "original_name": {
+            "type": "string",
+            "description": "Original name of the TV show"
+          },
+          "first_air_date": {
+            "type": "string",
+            "format": "date",
+            "description": "First air date"
+          },
+          "last_air_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Last air date"
+          },
+          "seasons": {
+            "type": "integer",
+            "description": "Number of seasons"
+          },
+          "episodes": {
+            "type": "integer",
+            "description": "Number of episodes"
+          },
+          "status": {
+            "type": "string",
+            "description": "Show status"
+          },
+          "overview": {
+            "type": "string",
+            "description": "Show overview/description"
+          },
+          "popularity": {
+            "type": "number",
+            "description": "Popularity score"
+          },
+          "tmdb_rating": {
+            "type": "number",
+            "description": "TMDb rating (0-10)"
+          },
+          "vote_count": {
+            "type": "integer",
+            "description": "Number of votes"
+          },
+          "poster_url": {
+            "type": "string",
+            "description": "URL to poster image"
+          },
+          "backdrop_url": {
+            "type": "string",
+            "description": "URL to backdrop image"
+          },
+          "actors": {
+            "type": "array",
+            "description": "Array of actor objects with character information",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "character_name": { "type": "string" },
+                "display_order": { "type": "integer" }
+              }
+            }
+          },
+          "networks": {
+            "type": "array",
+            "description": "Array of network names",
+            "items": { "type": "string" }
+          },
+          "genres": {
+            "type": "array",
+            "description": "Array of genre names",
+            "items": { "type": "string" }
+          },
+          "creators": {
+            "type": "array",
+            "description": "Array of creator names",
+            "items": { "type": "string" }
+          },
+          "studios": {
+            "type": "array",
+            "description": "Array of studio names",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["id", "name"]
+      },
+      "Actor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the actor"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the actor"
+          }
+        }
+      },
+      "Network": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the network"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the network"
+          }
+        }
+      },
+      "Genre": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the genre"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the genre"
+          }
+        }
+      },
+      "Creator": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the creator"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the creator"
+          }
+        }
+      },
+      "Studio": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the studio"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the studio"
+          }
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Unauthorized - Invalid or missing API key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Unauthorized: Invalid or missing API key"
+                }
+              }
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Bad Request - Invalid or missing required fields",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Validation error"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Required field is missing or invalid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "API key passed in the x-api-key header"
+      }
+    }
   }
+}
